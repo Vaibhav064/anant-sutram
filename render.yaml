@@ -10,10 +10,6 @@ services:
         value: 5000
       - key: NODE_ENV
         value: production
-      - key: MONGO_URI
-      - key: JWT_SECRET
-      - key: EMAIL_USER
-      - key: EMAIL_PASS
       - key: FRONTEND_URL
         value: "*" # Allow any frontend during setup, can be tightened later
       - key: GOOGLE_CLIENT_ID
