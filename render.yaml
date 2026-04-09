@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: anant-sutram-api
+    runtime: node
+    buildCommand: npm install
+    startCommand: node index.js
+    rootContext: server
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        fromConfig: MONGO_URI
+      - key: JWT_SECRET
+        fromConfig: JWT_SECRET
+      - key: EMAIL_USER
+        fromConfig: EMAIL_USER
+      - key: EMAIL_PASS
+        fromConfig: EMAIL_PASS
+      - key: FRONTEND_URL
+        value: "*" # Allow any frontend during setup, can be tightened later
+      - key: GOOGLE_CLIENT_ID
+        value: 1051430268469-tjugvgi93nmpvl3beo6fsibt9qvgm5k4.apps.googleusercontent.com
