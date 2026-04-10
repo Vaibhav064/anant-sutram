@@ -1,9 +1,13 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 
 export const useStore = create(
   persist(
     (set, get) => ({
+      // State Hydration
+      _hasHydrated: false,
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
+
       // Auth
       user: null,
       isAuthLoading: true,
@@ -89,7 +93,8 @@ export const useStore = create(
       },
 
       updateChatSession: (id, messages) => {
-        const sessions = (get().chatSessions || []).map(s =>
+        const currentSessions = get().chatSessions || [];
+        const sessions = currentSessions.map(s =>
           s.id === id
             ? {
                 ...s,
@@ -146,9 +151,26 @@ export const useStore = create(
     }),
     {
       name: 'anant-sutram-storage',
-      // No partialize — let Zustand serialize all plain values.
-      // Functions are naturally skipped by JSON.stringify.
-      // This matches the original behavior and prevents rehydration issues.
+      storage: createJSONStorage(() => localStorage),
+      version: 2, // Bump version to force clean state or handle migration
+      onRehydrateStorage: (state) => {
+        return (rehydratedState, error) => {
+          if (error) {
+            console.error('Rehydration error:', error);
+          } else if (rehydratedState) {
+            rehydratedState.setHasHydrated(true);
+          }
+        };
+      },
+      migrate: (persistedState, version) => {
+        if (version === 0 || version === 1) {
+          // If we are migrating from version 0 or 1, ensure chatSessions is an array
+          if (persistedState && typeof persistedState === 'object') {
+            persistedState.chatSessions = persistedState.chatSessions || [];
+          }
+        }
+        return persistedState;
+      },
     }
   )
 )

@@ -47,10 +47,13 @@ const ProtectedRoute = ({ children }) => {
 function AppInner() {
   const setUser = useStore(s => s.setUser);
   const setAuthLoading = useStore(s => s.setAuthLoading);
+  const hasHydrated = useStore(s => s._hasHydrated);
   const { setTheme } = useTheme();
 
   // On mount: restore session, sync user data + theme
   useEffect(() => {
+    if (!hasHydrated) return; // Wait for store to be ready
+
     const restoreSession = async () => {
       const token = localStorage.getItem('token');
       
@@ -98,7 +101,18 @@ function AppInner() {
       }
     };
     restoreSession();
-  }, []);
+  }, [hasHydrated]); // Re-run when hydration status changes
+
+  if (!hasHydrated) {
+    return (
+      <div className="min-h-[100dvh] flex items-center justify-center bg-[#0a0a0f]">
+        <div className="flex flex-col items-center gap-5">
+          <div className="w-12 h-12 rounded-full border-2 border-[rgba(124,106,245,0.3)] border-t-[#7C6AF5] animate-spin" />
+          <p className="text-[13px] font-semibold tracking-[0.2em] text-[rgba(255,255,255,0.3)] uppercase">Loading Journey...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ToastProvider>
