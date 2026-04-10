@@ -279,9 +279,16 @@ textarea {
   .text-white\/15 { color: rgba(15,10,40,0.15) !important; }
   .text-white\/20 { color: rgba(15,10,40,0.20) !important; }
   .text-white\/25 { color: rgba(15,10,40,0.25) !important; }
-  .text-white\/30 { color: rgba(15,10,40,0.30) !important; }
-  .text-white\/35 { color: rgba(15,10,40,0.35) !important; }
+  .text-white\/75 { color: rgba(15,10,40,0.8) !important; }
+  .text-white\/70 { color: rgba(15,10,40,0.72) !important; }
+  .text-white\/65 { color: rgba(15,10,40,0.68) !important; }
+  .text-white\/60 { color: rgba(15,10,40,0.62) !important; }
+  .text-white\/50 { color: rgba(15,10,40,0.55) !important; }
   .text-white\/40 { color: rgba(15,10,40,0.45) !important; }
+  .text-white\/30 { color: rgba(15,10,40,0.35) !important; }
+  .text-white\/20 { color: rgba(15,10,40,0.25) !important; }
+  .text-white\/10 { color: rgba(15,10,40,0.15) !important; }
+  .text-white\/5 { color: rgba(15,10,40,0.08) !important; }
   .text-white\/50 { color: rgba(15,10,40,0.52) !important; }
   .text-white\/60 { color: rgba(15,10,40,0.62) !important; }
   .text-white\/70 { color: rgba(15,10,40,0.72) !important; }

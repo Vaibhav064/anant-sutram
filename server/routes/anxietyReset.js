@@ -33,7 +33,21 @@ const PROGRAM_DAYS = [
 router.get('/progress', authMiddleware, async (req, res) => {
   try {
     const progress = await AnxietyResetProgress.findOne({ userId: req.userId });
-    res.json({ progress, programDays: PROGRAM_DAYS });
+    
+    let isNextDayLocked = false;
+    if (progress && progress.lastCompletedDate) {
+      const now = new Date();
+      const last = new Date(progress.lastCompletedDate);
+      
+      // If last completed date is SAME as today, then next day is locked until tomorrow
+      if (now.getFullYear() === last.getFullYear() && 
+          now.getMonth() === last.getMonth() && 
+          now.getDate() === last.getDate()) {
+        isNextDayLocked = true;
+      }
+    }
+
+    res.json({ progress, programDays: PROGRAM_DAYS, isNextDayLocked });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch progress' });
   }

@@ -57,9 +57,9 @@ export function Journal() {
     if (!user) return;
     setLoading(true);
     try {
-      const url = new URL(`${BACKEND}/api/journal`);
-      if (search) url.searchParams.set('search', search);
-      const res = await fetch(url.toString(), { headers: getAuthHeader() });
+      let path = '/api/journal';
+      if (search) path += `?search=${encodeURIComponent(search)}`;
+      const res = await apiFetch(path);
       const data = await res.json();
       setEntries(data.entries || []);
     } catch {
@@ -107,9 +107,8 @@ export function Journal() {
       setAiInsight(insight);
 
       if (user) {
-        await fetch(`${BACKEND}/api/journal`, {
+        const res = await apiFetch('/api/journal', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
           body: JSON.stringify({
             content,
             prompt,
@@ -118,10 +117,12 @@ export function Journal() {
             moodScore,
           }),
         });
+        if (!res.ok) throw new Error();
       }
 
       setShowInsight(true);
-    } catch {
+    } catch (err) {
+      console.error('Journal save error:', err);
       toast.error('Failed to save entry');
     } finally {
       setSaving(false);
@@ -130,7 +131,8 @@ export function Journal() {
 
   const handleDeleteEntry = async (id) => {
     try {
-      await fetch(`${BACKEND}/api/journal/${id}`, { method: 'DELETE', headers: getAuthHeader() });
+      const res = await apiFetch(`/api/journal/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
       setEntries(prev => prev.filter(e => e._id !== id));
       setSelectedEntry(null);
       toast.success('Entry deleted');

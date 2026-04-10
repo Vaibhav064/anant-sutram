@@ -53,10 +53,21 @@ function AppInner() {
   useEffect(() => {
     const restoreSession = async () => {
       const token = localStorage.getItem('token');
+      
+      // If no token, user is definitely logged out.
       if (!token) {
         setAuthLoading(false);
         return;
       }
+
+      // If we ALREADY have a user from persistence, show the UI immediately
+      // while we refresh data in the background.
+      const persistedUser = useStore.getState().user;
+      if (persistedUser) {
+        // User is already available from persist — unblock the UI immediately
+        setAuthLoading(false);
+      }
+
       try {
         const res = await apiFetch('/api/auth/me');
         if (res.ok) {
@@ -66,12 +77,24 @@ function AppInner() {
           if (user.settings?.theme) {
             setTheme(user.settings.theme);
           }
-        } else {
+        } else if (res.status === 401 || res.status === 403) {
+          // Token explicitly rejected by server — must log out
           localStorage.removeItem('token');
+          useStore.getState().clearUser();
+          setAuthLoading(false);
+        } else {
+          // Other server error (5xx etc.) — keep user logged in using persisted data
+          if (!persistedUser) {
+            setAuthLoading(false);
+          }
+        }
+      } catch (err) {
+        // Network error / offline — keep the user logged in using persisted data
+        // NEVER clear the user on a network error. Only logout on explicit 401/403.
+        console.warn("Session restore network error (keeping user logged in):", err.message);
+        if (!persistedUser) {
           setAuthLoading(false);
         }
-      } catch {
-        setAuthLoading(false);
       }
     };
     restoreSession();

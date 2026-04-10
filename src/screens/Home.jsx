@@ -54,7 +54,7 @@ export function Home() {
   const firstName = getFirstName?.() || 'Wanderer';
   const streak = user?.currentStreak || 0;
   const [contextNote, setContextNote] = useState('');
-  const [hasCheckedIn, setHasCheckedIn] = useState(!!moodScore);
+  const [hasCheckedIn, setHasCheckedIn] = useState(false);
   const [saving, setSaving] = useState(false);
   const [sliderVal, setSliderVal] = useState(5);
   const [anxietyProgress, setAnxietyProgress] = useState(null);
@@ -81,19 +81,39 @@ export function Home() {
           body: JSON.stringify({ score: sliderVal, note: contextNote, emoji: moodState.emoji }),
         });
         if (!res.ok) throw new Error();
+        const data = await res.json();
+        setMood(sliderVal, data.entry);
+      } else {
+        setMood(sliderVal, { createdAt: new Date().toISOString(), score: sliderVal });
       }
 
-      setMood(sliderVal);
       setHasCheckedIn(true);
       toast.success('Mood saved ✨');
     } catch {
       // Still save locally even if API fails
-      setMood(sliderVal);
+      setMood(sliderVal, { createdAt: new Date().toISOString(), score: sliderVal });
       setHasCheckedIn(true);
     } finally {
       setSaving(false);
     }
   };
+
+  const todayMoodEntry = useStore(s => s.todayMoodEntry);
+
+  // Calendar-day check: mood is saved for the entire calendar day (resets at midnight)
+  useEffect(() => {
+    if (todayMoodEntry?.createdAt) {
+      const entryDate = new Date(todayMoodEntry.createdAt);
+      const today = new Date();
+      const isSameDay =
+        entryDate.getFullYear() === today.getFullYear() &&
+        entryDate.getMonth() === today.getMonth() &&
+        entryDate.getDate() === today.getDate();
+      setHasCheckedIn(isSameDay);
+    } else {
+      setHasCheckedIn(false);
+    }
+  }, [todayMoodEntry]);
 
   return (
     <div className="flex flex-col min-h-screen bg-bg pb-nav">
@@ -181,21 +201,21 @@ export function Home() {
                 />
 
                 {/* Note + Save */}
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <input
                     type="text"
-                    placeholder="What's on your mind? (optional)"
+                    placeholder="Briefly, why? (optional)"
                     value={contextNote}
                     onChange={(e) => setContextNote(e.target.value)}
-                    className="flex-1 bg-bg border border-white/6 rounded-2xl px-4 py-2.5 text-[14px] text-white placeholder:text-white/25 focus:outline-none focus:border-primary/40 transition-colors"
+                    className="flex-1 bg-bg border border-white/6 rounded-2xl px-4 py-3 text-[14px] text-white placeholder:text-white/20 focus:outline-none focus:border-primary/40 transition-colors"
                     maxLength={100}
                   />
                   <button
                     onClick={handleSaveMood}
                     disabled={saving}
-                    className="bg-primary text-white px-5 py-2.5 rounded-2xl text-[14px] font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5 btn-glow shrink-0"
+                    className="bg-primary text-white h-[48px] px-6 rounded-2xl text-[14px] font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 btn-glow shrink-0"
                   >
-                    {saving ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Save'}
+                    {saving ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Save Feeling'}
                   </button>
                 </div>
               </motion.div>

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
-import { ArrowLeft, MoreVertical, Mic, Send, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Mic, Send, ShieldAlert, MessageSquare, Trash2, Plus, X, ChevronRight, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const PERSONA_CONFIGS = {
@@ -12,6 +12,7 @@ const PERSONA_CONFIGS = {
     color: 'from-violet-500/20 to-indigo-500/20',
     borderColor: 'border-violet-500/30',
     accentColor: 'text-violet-400',
+    accentBg: 'bg-violet-500/15',
     greeting: "I'm glad you reached out. This is a safe, judgment-free space. I'm here to listen deeply and help you understand what you're experiencing. What's on your mind today?",
     systemPrompt: `You are Aarav, acting as a compassionate and highly skilled AI Psychologist within the Anant Sutram healing app.
 
@@ -41,6 +42,7 @@ IMPORTANT RULES:
     color: 'from-amber-500/20 to-orange-500/20',
     borderColor: 'border-amber-500/30',
     accentColor: 'text-amber-400',
+    accentBg: 'bg-amber-500/15',
     greeting: "Namaste 🙏 Welcome to this sacred space. The very fact that you're here shows your soul is seeking something deeper. Let us explore what your heart needs to express today.",
     systemPrompt: `You are Aarav, acting as a wise and compassionate Spiritual Guide within the Anant Sutram healing app.
 
@@ -71,6 +73,7 @@ IMPORTANT RULES:
     color: 'from-cyan-500/20 to-teal-500/20',
     borderColor: 'border-cyan-500/30',
     accentColor: 'text-cyan-400',
+    accentBg: 'bg-cyan-500/15',
     greeting: "Hey, I'm really glad you're here! 💪 Taking this step shows real self-awareness. Let's cut through the noise together and figure out what you actually need right now. What's going on?",
     systemPrompt: `You are Aarav, acting as an energetic and empowering Life Coach within the Anant Sutram healing app.
 
@@ -97,13 +100,37 @@ IMPORTANT RULES:
   }
 };
 
+function formatRelativeTime(isoString) {
+  if (!isoString) return '';
+  const date = new Date(isoString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHrs = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHrs < 24) return `${diffHrs}h ago`;
+  if (diffDays === 1) return 'yesterday';
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+}
+
 export function Chat() {
   const navigate = useNavigate();
   const { moodScore, onboardingAnswers } = useStore();
+  const createChatSession = useStore(s => s.createChatSession);
+  const updateChatSession = useStore(s => s.updateChatSession);
+  const deleteChatSession = useStore(s => s.deleteChatSession);
+  const getChatSession = useStore(s => s.getChatSession);
+  const chatSessions = useStore(s => s.chatSessions);
+
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [persona, setPersona] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const chatContainerRef = useRef(null);
@@ -132,25 +159,65 @@ export function Chat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  // Send greeting when persona is selected
+  // Persist messages to store whenever they change
   useEffect(() => {
-    if (persona && messages.length === 0) {
+    if (sessionId && messages.length > 0) {
+      updateChatSession(sessionId, messages);
+    }
+  }, [messages, sessionId]);
+
+  // Send greeting when persona is selected (new session)
+  useEffect(() => {
+    if (persona && messages.length === 0 && sessionId) {
       const config = PERSONA_CONFIGS[persona];
       if (config) {
-        setMessages([{
+        const greeting = [{
           role: 'assistant',
           content: config.greeting,
-          timestamp: new Date()
-        }]);
+          timestamp: new Date().toISOString()
+        }];
+        setMessages(greeting);
       }
     }
-  }, [persona]);
+  }, [persona, sessionId]);
+
+  const startNewSession = (personaId) => {
+    const config = PERSONA_CONFIGS[personaId];
+    const id = createChatSession(personaId, config.name, config.icon);
+    setPersona(personaId);
+    setSessionId(id);
+    setMessages([]);
+    setSidebarOpen(false);
+  };
+
+  const resumeSession = (session) => {
+    setPersona(session.persona);
+    setSessionId(session.id);
+    // Restore timestamps as Date objects compatible with display
+    const restored = session.messages.map(m => ({
+      ...m,
+      timestamp: m.timestamp ? new Date(m.timestamp) : new Date(),
+    }));
+    setMessages(restored);
+    setSidebarOpen(false);
+  };
+
+  const handleDeleteSession = (e, id) => {
+    e.stopPropagation();
+    deleteChatSession(id);
+    if (sessionId === id) {
+      setPersona(null);
+      setSessionId(null);
+      setMessages([]);
+    }
+  };
 
   const handleSend = async (text = input) => {
     if (!text.trim()) return;
     
-    const newMsg = { role: 'user', content: text, timestamp: new Date() };
-    setMessages(prev => [...prev, newMsg]);
+    const newMsg = { role: 'user', content: text, timestamp: new Date().toISOString() };
+    const updatedMessages = [...messages, newMsg];
+    setMessages(updatedMessages);
     setInput('');
     setIsTyping(true);
 
@@ -170,7 +237,7 @@ export function Chat() {
 CONTEXT:
 - User's current mood score: ${moodScore ?? 'not set'}/10 (lower = worse).
 - User's onboarding answers: ${JSON.stringify(onboardingAnswers || {})}.
-- Conversation so far has ${messages.length} messages.
+- Conversation so far has ${updatedMessages.length} messages.
 - Remember: ALWAYS finish your sentences completely. Never get cut off.`;
 
       const contents = [
@@ -182,7 +249,7 @@ CONTEXT:
           role: 'model',
           parts: [{ text: personaConfig.greeting }]
         },
-        ...messages.filter(m => m !== newMsg).map(m => ({
+        ...updatedMessages.filter(m => m.role !== 'assistant' || m.content !== personaConfig.greeting).slice(0, -1).map(m => ({
           role: m.role === 'assistant' ? 'model' : 'user',
           parts: [{ text: m.content }]
         })),
@@ -241,65 +308,230 @@ CONTEXT:
       const data = await response.json();
       const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm having trouble finding the right words, but I'm here for you. Could you share a bit more about what you're feeling?";
 
-      setMessages(prev => [...prev, { role: 'assistant', content: reply, timestamp: new Date() }]);
+      const aiMsg = { role: 'assistant', content: reply, timestamp: new Date().toISOString() };
+      setMessages(prev => [...prev, aiMsg]);
     } catch (error) {
       console.warn("AI error:", error);
-      const personaConfig = PERSONA_CONFIGS[persona] || PERSONA_CONFIGS.psychologist;
       const fallbacks = {
         psychologist: "I notice there might be a connection issue, but I want you to know — your feelings are completely valid. Take a slow, deep breath with me. When you're ready, try sharing again.",
         spiritual: "It seems the universe is asking us to pause for a moment. Use this breath to center yourself — sometimes silence itself is the deepest teacher. Please try again when you feel ready.",
         coach: "Looks like we hit a small bump — but that's okay, setbacks are just setups for comebacks. Take a breath, and let's try that again. I'm right here."
       };
       setTimeout(() => {
-        setMessages(prev => [...prev, { 
+        const fallbackMsg = { 
           role: 'assistant', 
           content: fallbacks[persona] || fallbacks.psychologist,
-          timestamp: new Date() 
-        }]);
+          timestamp: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, fallbackMsg]);
       }, 1200);
     } finally {
       setIsTyping(false);
     }
   };
 
+  const config = persona ? PERSONA_CONFIGS[persona] : null;
+
+  // ──── Sidebar ────
+  const Sidebar = () => (
+    <AnimatePresence>
+      {sidebarOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSidebarOpen(false)}
+            className="fixed inset-0 bg-black/60 z-[60]"
+          />
+          {/* Sidebar panel */}
+          <motion.div
+            initial={{ x: '-100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '-100%' }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="fixed left-0 top-0 bottom-0 w-[80vw] max-w-[320px] bg-[#0f0f1a] border-r border-white/8 z-[61] flex flex-col"
+          >
+            {/* Sidebar Header */}
+            <div className="flex items-center justify-between px-5 pt-14 pb-4 border-b border-white/6">
+              <div>
+                <h2 className="text-white font-bold text-[18px] tracking-tight">Conversations</h2>
+                <p className="text-white/30 text-[11px] mt-0.5">{chatSessions.length} saved</p>
+              </div>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center"
+              >
+                <X size={14} className="text-white/50" />
+              </button>
+            </div>
+
+            {/* New Chat Button */}
+            <div className="px-4 py-3 border-b border-white/5">
+              <button
+                onClick={() => { setPersona(null); setSessionId(null); setMessages([]); setSidebarOpen(false); }}
+                className="w-full flex items-center gap-3 bg-primary/15 border border-primary/25 rounded-2xl px-4 py-3 text-primary-light text-[14px] font-semibold hover:bg-primary/20 transition-all active:scale-95"
+              >
+                <Plus size={16} />
+                New Conversation
+              </button>
+            </div>
+
+            {/* Session List */}
+            <div className="flex-1 overflow-y-auto py-2">
+              {chatSessions.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full px-6 text-center">
+                  <MessageSquare size={32} className="text-white/15 mb-3" />
+                  <p className="text-white/25 text-[13px]">No conversations yet. Start chatting!</p>
+                </div>
+              ) : (
+                chatSessions.map((session) => {
+                  const sConfig = PERSONA_CONFIGS[session.persona];
+                  const isActive = session.id === sessionId;
+                  const previewMsg = session.messages.find(m => m.role === 'user')?.content || 'New conversation';
+                  return (
+                    <motion.button
+                      key={session.id}
+                      onClick={() => resumeSession(session)}
+                      className={`w-full text-left px-4 py-3.5 flex items-start gap-3 transition-all border-b border-white/3 ${isActive ? 'bg-primary/10' : 'hover:bg-white/4'}`}
+                    >
+                      <div className={`w-9 h-9 rounded-2xl ${sConfig?.accentBg || 'bg-white/10'} flex items-center justify-center text-lg shrink-0 mt-0.5`}>
+                        {session.personaIcon || sConfig?.icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className={`text-[12px] font-bold ${sConfig?.accentColor || 'text-white/60'} truncate`}>
+                            {session.personaName || sConfig?.name}
+                          </span>
+                          <span className="text-[10px] text-white/20 shrink-0 ml-1">
+                            {formatRelativeTime(session.updatedAt)}
+                          </span>
+                        </div>
+                        <p className="text-white/60 text-[12px] truncate leading-snug">
+                          {previewMsg.slice(0, 50)}{previewMsg.length > 50 ? '…' : ''}
+                        </p>
+                        <p className="text-white/20 text-[10px] mt-1">
+                          {session.messages.length} messages
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => handleDeleteSession(e, session.id)}
+                        className="p-1.5 rounded-lg hover:bg-red-500/15 text-white/20 hover:text-red-400 transition-all shrink-0 mt-1"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </motion.button>
+                  );
+                })
+              )}
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+
   // ──── Persona Selection Screen ────
   if (!persona) {
     return (
-      <div className="fixed inset-0 bg-bg z-50 flex flex-col justify-center px-6">
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h2 className="font-display text-[28px] text-white text-center mb-1">Choose Your Guide</h2>
-          <p className="text-white/40 text-center mb-8 text-sm">Who resonates with what you need right now?</p>
-        </motion.div>
-        <div className="space-y-3">
-          {personas.map((p, i) => (
-            <motion.button
-              key={p.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 + i * 0.1, duration: 0.4 }}
-              onClick={() => setPersona(p.id)}
-              className={`w-full bg-gradient-to-r ${PERSONA_CONFIGS[p.id].color} border ${PERSONA_CONFIGS[p.id].borderColor} p-5 rounded-2xl flex items-center space-x-4 hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]`}
-            >
-              <div className="text-3xl w-12 h-12 flex items-center justify-center bg-white/5 rounded-xl">{p.icon}</div>
-              <div className="text-left flex-1">
-                <div className="text-white font-semibold text-[16px]">{p.name}</div>
-                <div className="text-white/50 text-[12px] mt-0.5">{p.subtitle}</div>
-              </div>
-              <div className="text-white/20 text-lg">›</div>
-            </motion.button>
-          ))}
+      <div className="fixed inset-0 bg-bg z-50 flex flex-col">
+        <Sidebar />
+        {/* Top bar with history button */}
+        <div className="flex items-center justify-between px-4 pt-safe pt-12 pb-4">
+          <button onClick={() => navigate(-1)} className="text-white p-2 bg-transparent border-none hover:bg-white/5 rounded-full transition-colors">
+            <ArrowLeft size={22} />
+          </button>
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="relative flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3 py-2 text-white/60 text-[13px] font-medium hover:bg-white/10 transition-all"
+          >
+            <MessageSquare size={15} />
+            History
+            {chatSessions.length > 0 && (
+              <span className="w-4 h-4 bg-primary rounded-full text-[9px] text-white font-black flex items-center justify-center">
+                {chatSessions.length > 9 ? '9+' : chatSessions.length}
+              </span>
+            )}
+          </button>
         </div>
-        <button onClick={() => navigate(-1)} className="mt-8 text-white/30 text-sm py-4 bg-transparent border-none hover:text-white/50 transition-colors">Cancel</button>
+
+        <div className="flex-1 flex flex-col justify-center px-6 pb-8">
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            <h2 className="font-display text-[28px] text-white text-center mb-1">Choose Your Guide</h2>
+            <p className="text-white/40 text-center mb-8 text-sm">Who resonates with what you need right now?</p>
+          </motion.div>
+          <div className="space-y-3">
+            {personas.map((p, i) => (
+              <motion.button
+                key={p.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 + i * 0.1, duration: 0.4 }}
+                onClick={() => startNewSession(p.id)}
+                className={`w-full bg-gradient-to-r ${PERSONA_CONFIGS[p.id].color} border ${PERSONA_CONFIGS[p.id].borderColor} p-5 rounded-2xl flex items-center space-x-4 hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]`}
+              >
+                <div className="text-3xl w-12 h-12 flex items-center justify-center bg-white/5 rounded-xl">{p.icon}</div>
+                <div className="text-left flex-1">
+                  <div className="text-white font-semibold text-[16px]">{p.name}</div>
+                  <div className="text-white/50 text-[12px] mt-0.5">{p.subtitle}</div>
+                </div>
+                <div className="text-white/20 text-lg">›</div>
+              </motion.button>
+            ))}
+          </div>
+
+          {/* Recent sessions quick access */}
+          {chatSessions.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mt-8"
+            >
+              <p className="text-white/25 text-[11px] font-bold uppercase tracking-widest mb-3 text-center">Recent Conversations</p>
+              <div className="space-y-2">
+                {chatSessions.slice(0, 3).map((session) => {
+                  const sConfig = PERSONA_CONFIGS[session.persona];
+                  const previewMsg = session.messages.find(m => m.role === 'user')?.content || 'New conversation';
+                  return (
+                    <button
+                      key={session.id}
+                      onClick={() => resumeSession(session)}
+                      className="w-full flex items-center gap-3 bg-white/3 border border-white/6 rounded-2xl px-4 py-3 hover:bg-white/6 transition-all active:scale-98 text-left"
+                    >
+                      <span className="text-xl shrink-0">{session.personaIcon || sConfig?.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white/70 text-[13px] font-medium truncate">{previewMsg}</p>
+                        <p className="text-white/25 text-[11px]">{formatRelativeTime(session.updatedAt)}</p>
+                      </div>
+                      <ChevronRight size={14} className="text-white/20 shrink-0" />
+                    </button>
+                  );
+                })}
+                {chatSessions.length > 3 && (
+                  <button
+                    onClick={() => setSidebarOpen(true)}
+                    className="w-full text-center text-white/30 text-[12px] py-2 hover:text-white/50 transition-colors"
+                  >
+                    View all {chatSessions.length} conversations →
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </div>
       </div>
     );
   }
 
-  const config = PERSONA_CONFIGS[persona];
   const quickReplies = getQuickReplies();
 
   // ──── Chat Screen ────
   return (
     <div className="flex flex-col h-[100dvh] bg-bg overflow-hidden">
+      <Sidebar />
+
       {/* ── Header ── */}
       <div className="shrink-0 ios-glass border-b border-surface2 px-4 py-3 flex items-center justify-between z-20">
         <button onClick={() => navigate(-1)} className="text-white p-2 bg-transparent border-none hover:bg-white/5 rounded-full transition-colors">
@@ -316,9 +548,23 @@ CONTEXT:
           </div>
           <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
         </div>
-        <button onClick={() => navigate('/sos')} className="p-2 bg-red-500/10 border border-red-500/20 rounded-full hover:bg-red-500/20 transition-colors">
-          <ShieldAlert size={18} className="text-red-400" />
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Sidebar / history toggle */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="relative p-2 rounded-full hover:bg-white/5 transition-colors"
+          >
+            <MessageSquare size={18} className="text-white/50" />
+            {chatSessions.length > 0 && (
+              <span className="absolute top-0 right-0 w-4 h-4 bg-primary rounded-full text-[8px] text-white font-black flex items-center justify-center">
+                {chatSessions.length > 9 ? '9+' : chatSessions.length}
+              </span>
+            )}
+          </button>
+          <button onClick={() => navigate('/sos')} className="p-2 bg-red-500/10 border border-red-500/20 rounded-full hover:bg-red-500/20 transition-colors">
+            <ShieldAlert size={18} className="text-red-400" />
+          </button>
+        </div>
       </div>
 
       {/* ── Messages Area ── */}
@@ -326,6 +572,7 @@ CONTEXT:
         <div className="space-y-4">
           {messages.map((msg, i) => {
             const isAI = msg.role === 'assistant';
+            const ts = msg.timestamp ? new Date(msg.timestamp) : new Date();
             return (
               <motion.div 
                 key={i}
@@ -348,7 +595,7 @@ CONTEXT:
                     {msg.content}
                   </div>
                   <div className="text-[10px] text-white/25 mt-1 px-1.5 font-medium">
-                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {ts.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
               </motion.div>

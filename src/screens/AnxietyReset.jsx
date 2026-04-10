@@ -192,6 +192,7 @@ export function AnxietyReset() {
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(null);
   const [programDays, setProgramDays] = useState([]);
+  const [isNextDayLocked, setIsNextDayLocked] = useState(false);
 
   const [activeTab, setActiveTab] = useState('journey'); // 'journey' | 'plans' | 'today'
   const [selectedDay, setSelectedDay] = useState(null);
@@ -217,6 +218,7 @@ export function AnxietyReset() {
       const data = await res.json();
       setProgress(data.progress);
       setProgramDays(data.programDays || []);
+      setIsNextDayLocked(data.isNextDayLocked || false);
     } catch {
       toast.error('Failed to load program data');
     } finally {
@@ -294,7 +296,12 @@ export function AnxietyReset() {
 
   const isDayUnlocked = (dayNum) => {
     if (!progress) return false;
-    return dayNum <= currentDay;
+    // A day is unlocked if:
+    // 1. It's already been completed (user can review it), OR
+    // 2. It's the current active day (server has advanced to it)
+    // Future days beyond currentDay are always locked.
+    if (isDayCompleted(dayNum)) return true;
+    return dayNum === currentDay;
   };
 
   if (loading) return <PageSkeleton />;
@@ -430,17 +437,21 @@ export function AnxietyReset() {
         {/* ── TODAY TAB ── */}
         {activeTab === 'today' && todayContent && (
           <motion.div key="today" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="px-5 pt-6 pb-8">
-            {isDayCompleted(currentDay) ? (
+            {isDayCompleted(currentDay) || (isNextDayLocked && currentDay > 1) ? (
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
                 className="text-center py-12">
-                <div className="text-[64px] mb-4">🌟</div>
-                <h2 className="text-[24px] font-bold text-white mb-2">Day {currentDay} Complete!</h2>
-                <p className="text-white/50 text-[15px] mb-8">You're building something real. Come back tomorrow.</p>
+                <div className="text-[64px] mb-4">{isNextDayLocked ? '⏳' : '🌟'}</div>
+                <h2 className="text-[24px] font-bold text-white mb-2">{isNextDayLocked ? 'Coming Tomorrow' : `Day ${currentDay} Complete!`}</h2>
+                <p className="text-white/50 text-[15px] mb-8">
+                  {isNextDayLocked 
+                    ? `You've done great today. Day ${currentDay} will unlock at midnight.` 
+                    : "You're building something real. Come back tomorrow."}
+                </p>
                 {currentDay < 21 && (
                   <div className="bg-surface2 border border-white/6 rounded-2xl p-5 text-left">
-                    <p className="text-white/40 text-[11px] uppercase tracking-wider font-bold mb-2">Tomorrow — Day {currentDay + 1}</p>
-                    <p className="text-white font-bold text-[17px]">{programDays[currentDay]?.title}</p>
-                    <p className="text-white/50 text-[13px] mt-1">{programDays[currentDay]?.theme}</p>
+                    <p className="text-white/40 text-[11px] uppercase tracking-wider font-bold mb-2">Next Journey Step — Day {currentDay}</p>
+                    <p className="text-white font-bold text-[17px]">{todayContent.title}</p>
+                    <p className="text-white/50 text-[13px] mt-1">{todayContent.theme}</p>
                   </div>
                 )}
               </motion.div>
@@ -467,7 +478,7 @@ export function AnxietyReset() {
 
                 {/* Exercise */}
                 <div className={`rounded-2xl border p-5 mb-4 transition-all ${exerciseDone ? 'bg-primary/15 border-primary/30' : 'bg-surface2 border-white/6'}`}>
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
                       <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Guided Exercise</p>
                       <h3 className="text-white font-bold text-[16px] mb-1">{todayContent.exercise}</h3>
@@ -475,7 +486,7 @@ export function AnxietyReset() {
                     </div>
                     <button
                       onClick={() => setExerciseDone(!exerciseDone)}
-                      className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ml-3 shrink-0 transition-all ${exerciseDone ? 'bg-primary border-primary' : 'border-white/20 hover:border-primary/50'}`}
+                      className={`w-9 h-9 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${exerciseDone ? 'bg-primary border-primary' : 'border-white/20 hover:border-primary/50'}`}
                     >
                       {exerciseDone && <CheckCircle2 size={16} className="text-white fill-white" />}
                     </button>
@@ -491,28 +502,34 @@ export function AnxietyReset() {
                 </div>
 
                 {/* Reflection */}
-                <div className="bg-surface2 border border-white/6 rounded-2xl p-5 mb-4">
+                <div className="bg-surface2 border border-white/8 rounded-2xl p-5 mb-4">
                   <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-3">Daily Reflection</p>
                   <p className="text-white font-semibold text-[15px] leading-snug mb-4">"{todayContent.reflection}"</p>
                   <textarea
                     value={journalResponse}
                     onChange={(e) => setJournalResponse(e.target.value)}
                     placeholder="Write your thoughts here..."
-                    className="w-full bg-bg/60 border border-white/6 rounded-xl px-4 py-3 text-[14px] text-white placeholder:text-white/20 focus:outline-none focus:border-primary/40 transition-colors resize-none"
+                    className="w-full rounded-xl px-4 py-3 text-[14px] placeholder:text-white/30 focus:outline-none focus:border-primary/40 transition-colors resize-none mb-1"
+                    style={{
+                      background: 'rgba(10, 10, 20, 0.85)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: '#e8e8f0',
+                    }}
                     rows={4}
                   />
+                  <p className="text-[10px] text-white/20 font-medium italic">* Your reflection is private and saved to your journey.</p>
                 </div>
 
                 {/* Task */}
                 <div className={`rounded-2xl border p-5 mb-6 transition-all ${taskDone ? 'bg-success/10 border-success/25' : 'bg-surface2 border-white/6'}`}>
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
                       <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Today's Task</p>
                       <p className="text-white font-medium text-[14px] leading-relaxed">{todayContent.task}</p>
                     </div>
                     <button
                       onClick={() => setTaskDone(!taskDone)}
-                      className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ml-3 shrink-0 transition-all ${taskDone ? 'bg-success border-success' : 'border-white/20 hover:border-success/50'}`}
+                      className={`w-9 h-9 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${taskDone ? 'bg-success border-success' : 'border-white/20 hover:border-success/50'}`}
                     >
                       {taskDone && <CheckCircle2 size={16} className="text-white" />}
                     </button>
@@ -523,7 +540,7 @@ export function AnxietyReset() {
                 <button
                   onClick={() => handleCompleteDay(currentDay)}
                   disabled={completing}
-                  className="w-full py-4.5 rounded-2xl bg-gradient-to-r from-primary to-secondary text-white font-bold text-[16px] btn-glow hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full h-[58px] rounded-2xl bg-gradient-to-r from-primary to-secondary text-white font-bold text-[16px] shadow-glow-primary hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2 mb-4"
                 >
                   {completing ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : (
                     <>Complete Day {currentDay} <Sparkles size={16} /></>
