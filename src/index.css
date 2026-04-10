@@ -107,11 +107,18 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.15;
 }
 
-/* ─── Scrollbar ──────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+/* ─── Base ───────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important;  /* IE/Edge */
+}
+
+::-webkit-scrollbar {
+  display: none !important; /* Chrome/Safari */
+  width: 0 !important;
+  height: 0 !important;
+}
 
 /* ─── Selection ──────────────────────────────────────────────── */
 ::selection {
@@ -337,13 +344,4 @@ textarea {
 
   /* Bottom nav border */
   .border-t.border-white\/6 { border-color: var(--border-subtle) !important; }
-}
-
-/* Global scrollbar hiding for native mobile feel */
-::-webkit-scrollbar {
-  display: none !important;
-}
-* {
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
 }
