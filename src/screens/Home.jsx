@@ -41,6 +41,16 @@ function getTimeGreeting() {
   return 'Good night';
 }
 
+// Helper: check if a date string is from today
+function isToday(dateStr) {
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  const t = new Date();
+  return d.getFullYear() === t.getFullYear() &&
+    d.getMonth() === t.getMonth() &&
+    d.getDate() === t.getDate();
+}
+
 export function Home() {
   const navigate = useNavigate();
   const toast = useToast();
@@ -50,11 +60,13 @@ export function Home() {
   const moodScore = useStore(s => s.moodScore);
   const setMood = useStore(s => s.setMood);
   const getAuthHeader = useStore(s => s.getAuthHeader);
+  const todayMoodEntry = useStore(s => s.todayMoodEntry);
 
   const firstName = getFirstName?.() || 'Wanderer';
   const streak = user?.currentStreak || 0;
   const [contextNote, setContextNote] = useState('');
-  const [hasCheckedIn, setHasCheckedIn] = useState(false);
+  // Lazy initializer: read persisted mood synchronously on first render
+  const [hasCheckedIn, setHasCheckedIn] = useState(() => isToday(useStore.getState().todayMoodEntry?.createdAt));
   const [saving, setSaving] = useState(false);
   const [sliderVal, setSliderVal] = useState(5);
   const [anxietyProgress, setAnxietyProgress] = useState(null);
@@ -67,6 +79,18 @@ export function Home() {
     if (!user) return;
     apiFetch('/api/anxiety-reset/progress').then(r => r.json()).then(d => {
       if (d.progress) setAnxietyProgress(d.progress);
+    }).catch(() => {});
+  }, [user]);
+
+  // Server-side fallback: fetch today's mood on mount to catch store being stale
+  useEffect(() => {
+    if (!user) return;
+    apiFetch('/api/mood/today').then(r => r.json()).then(d => {
+      if (d.entry?.createdAt && isToday(d.entry.createdAt)) {
+        // Server confirms a mood was logged today — persist and mark checked in
+        setMood(d.entry.score, d.entry);
+        setHasCheckedIn(true);
+      }
     }).catch(() => {});
   }, [user]);
 
@@ -98,21 +122,9 @@ export function Home() {
     }
   };
 
-  const todayMoodEntry = useStore(s => s.todayMoodEntry);
-
-  // Calendar-day check: mood is saved for the entire calendar day (resets at midnight)
+  // Also watch todayMoodEntry from store for any live updates (e.g. from another tab)
   useEffect(() => {
-    if (todayMoodEntry?.createdAt) {
-      const entryDate = new Date(todayMoodEntry.createdAt);
-      const today = new Date();
-      const isSameDay =
-        entryDate.getFullYear() === today.getFullYear() &&
-        entryDate.getMonth() === today.getMonth() &&
-        entryDate.getDate() === today.getDate();
-      setHasCheckedIn(isSameDay);
-    } else {
-      setHasCheckedIn(false);
-    }
+    setHasCheckedIn(isToday(todayMoodEntry?.createdAt));
   }, [todayMoodEntry]);
 
   return (

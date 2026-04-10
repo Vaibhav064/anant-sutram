@@ -296,12 +296,13 @@ export function AnxietyReset() {
 
   const isDayUnlocked = (dayNum) => {
     if (!progress) return false;
-    // A day is unlocked if:
-    // 1. It's already been completed (user can review it), OR
-    // 2. It's the current active day (server has advanced to it)
-    // Future days beyond currentDay are always locked.
+    // Completed days are always viewable (review mode)
     if (isDayCompleted(dayNum)) return true;
-    return dayNum === currentDay;
+    // The current active day: only accessible if the server hasn't locked it.
+    // isNextDayLocked = true means today's day was completed today;
+    // the next day (currentDay) should stay locked until tomorrow.
+    if (dayNum === currentDay && !isNextDayLocked) return true;
+    return false;
   };
 
   if (loading) return <PageSkeleton />;

@@ -20,8 +20,8 @@ export const useStore = create(
       // 21-day progress (cached from server)
       anxietyResetProgress: null,
 
-      // ─── Chat Sessions ──────────────────────────────────────────────────────────
-      // Each session: { id, persona, personaName, messages[], createdAt, updatedAt, title }
+      // ─── Chat Sessions (persisted) ────────────────────────────────────────────────
+      // Each session: { id, persona, personaName, personaIcon, messages[], createdAt, updatedAt, title }
       chatSessions: [],
       activeChatSessionId: null,
 
@@ -81,7 +81,7 @@ export const useStore = create(
           updatedAt: new Date().toISOString(),
           title,
         };
-        const sessions = get().chatSessions;
+        const sessions = get().chatSessions || [];
         // Keep max 30 sessions (drop oldest)
         const trimmed = [newSession, ...sessions].slice(0, 30);
         set({ chatSessions: trimmed, activeChatSessionId: id });
@@ -89,7 +89,7 @@ export const useStore = create(
       },
 
       updateChatSession: (id, messages) => {
-        const sessions = get().chatSessions.map(s =>
+        const sessions = (get().chatSessions || []).map(s =>
           s.id === id
             ? {
                 ...s,
@@ -106,14 +106,14 @@ export const useStore = create(
       },
 
       deleteChatSession: (id) => {
-        const sessions = get().chatSessions.filter(s => s.id !== id);
+        const sessions = (get().chatSessions || []).filter(s => s.id !== id);
         const activeChatSessionId = get().activeChatSessionId === id ? null : get().activeChatSessionId;
         set({ chatSessions: sessions, activeChatSessionId });
       },
 
       setActiveChatSession: (id) => set({ activeChatSessionId: id }),
 
-      getChatSession: (id) => get().chatSessions.find(s => s.id === id) || null,
+      getChatSession: (id) => (get().chatSessions || []).find(s => s.id === id) || null,
 
       // ─── Clear / Logout ──────────────────────────────────────────────────────────
       clearUser: () => {
@@ -126,8 +126,8 @@ export const useStore = create(
           isAudioPlaying: false,
           anxietyResetProgress: null,
           activeChatSessionId: null,
+          // chatSessions intentionally kept — history survives re-login
         });
-        // Note: chatSessions intentionally kept — so history doesn't disappear on re-login
       },
 
       logout: () => {
@@ -146,17 +146,9 @@ export const useStore = create(
     }),
     {
       name: 'anant-sutram-storage',
-      // Serialize timestamps correctly
-      partialize: (state) => ({
-        user: state.user,
-        moodScore: state.moodScore,
-        todayMoodEntry: state.todayMoodEntry,
-        activeTrack: state.activeTrack,
-        audioVolume: state.audioVolume,
-        anxietyResetProgress: state.anxietyResetProgress,
-        chatSessions: state.chatSessions,
-        activeChatSessionId: state.activeChatSessionId,
-      }),
+      // No partialize — let Zustand serialize all plain values.
+      // Functions are naturally skipped by JSON.stringify.
+      // This matches the original behavior and prevents rehydration issues.
     }
   )
 )
