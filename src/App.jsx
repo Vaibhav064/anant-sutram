@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BottomNav } from './components/layout/BottomNav';
 import { Splash } from './screens/Splash';
 import { Onboarding } from './screens/Onboarding';
@@ -47,8 +47,21 @@ const ProtectedRoute = ({ children }) => {
 function AppInner() {
   const setUser = useStore(s => s.setUser);
   const setAuthLoading = useStore(s => s.setAuthLoading);
-  const hasHydrated = useStore(s => s._hasHydrated);
   const { setTheme } = useTheme();
+
+  const [hasHydrated, setHasHydrated] = useState(false);
+
+  useEffect(() => {
+    const unsubHydrate = useStore.persist.onHydrate(() => setHasHydrated(false));
+    const unsubFinishHydration = useStore.persist.onFinishHydration(() => setHasHydrated(true));
+
+    setHasHydrated(useStore.persist.hasHydrated());
+
+    return () => {
+      unsubHydrate();
+      unsubFinishHydration();
+    };
+  }, []);
 
   // On mount: restore session, sync user data + theme
   useEffect(() => {

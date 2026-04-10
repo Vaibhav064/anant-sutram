@@ -4,10 +4,6 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 export const useStore = create(
   persist(
     (set, get) => ({
-      // State Hydration (Local only, not persisted)
-      _hasHydrated: false,
-      setHasHydrated: (state) => set({ _hasHydrated: state }),
-
       // Auth
       user: null,
       isAuthLoading: true,
@@ -151,30 +147,10 @@ export const useStore = create(
     }),
     {
       name: 'anant-sutram-storage',
-      version: 3, // Bump version again for clean slate
+      version: 4, // Bump version again for clean slate
       storage: createJSONStorage(() => localStorage),
-      // CRITICAL: Filter out _hasHydrated so it's always false on fresh app start
-      partialize: (state) => {
-        const { _hasHydrated, setHasHydrated, ...persistedState } = state;
-        return persistedState;
-      },
-      onRehydrateStorage: (state) => {
-        // This runs when the store is initially created
-        return (rehydratedState, error) => {
-          if (error) {
-            console.error('Rehydration error:', error);
-          }
-          // Set to true regardless of whether data was found (even on fresh installs)
-          // We use state.setHasHydrated if rehydratedState is missing
-          if (rehydratedState) {
-            rehydratedState.setHasHydrated(true);
-          } else if (state) {
-            state.setHasHydrated(true);
-          }
-        };
-      },
       migrate: (persistedState, version) => {
-        if (version < 3) {
+        if (version < 4) {
           if (persistedState && typeof persistedState === 'object') {
             persistedState.chatSessions = persistedState.chatSessions || [];
           }
