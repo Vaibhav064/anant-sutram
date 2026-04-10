@@ -150,7 +150,12 @@ export function Home() {
           style={{ background: user?.photoUrl ? 'transparent' : 'linear-gradient(135deg, rgba(124,106,245,0.4), rgba(192,132,252,0.4))' }}
         >
           {user?.photoUrl
-            ? <img src={user.photoUrl} alt="avatar" className="w-full h-full object-cover" />
+            ? <img 
+                src={user.photoUrl} 
+                alt="avatar" 
+                className="w-full h-full object-cover" 
+                referrerPolicy="no-referrer"
+              />
             : (user?.name || user?.nickname || '?').charAt(0).toUpperCase()
           }
         </button>

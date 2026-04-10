@@ -1,5 +1,21 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
+import { Preferences } from '@capacitor/preferences'
+
+// ─── Capacitor Storage Adapter ────────────────────────────────────────────────
+// This is the most reliable way to persist data on Android for Capacitor apps.
+const capacitorStorage = {
+  getItem: async (name) => {
+    const { value } = await Preferences.get({ key: name });
+    return value;
+  },
+  setItem: async (name, value) => {
+    await Preferences.set({ key: name, value });
+  },
+  removeItem: async (name) => {
+    await Preferences.remove({ key: name });
+  },
+};
 
 export const useStore = create(
   persist(
@@ -146,11 +162,11 @@ export const useStore = create(
       get subscriptionTier() { return get().user?.subscription || 'free'; },
     }),
     {
-      name: 'anant-sutram-storage',
-      version: 4, // Bump version again for clean slate
-      storage: createJSONStorage(() => localStorage),
+      name: 'anant-sutram-prefs', // New name to avoid localStorage conflict
+      version: 5, // Bump version
+      storage: createJSONStorage(() => capacitorStorage),
       migrate: (persistedState, version) => {
-        if (version < 4) {
+        if (version < 5) {
           if (persistedState && typeof persistedState === 'object') {
             persistedState.chatSessions = persistedState.chatSessions || [];
           }

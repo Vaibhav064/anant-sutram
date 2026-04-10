@@ -15,13 +15,21 @@ function Avatar({ user, size = 'lg' }) {
       <img
         src={user.photoUrl}
         alt={initial}
+        referrerPolicy="no-referrer"
         className={`${dim} rounded-full object-cover border-2 border-white/20 shadow-glow-primary`}
-        onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+        onError={(e) => { 
+          e.target.style.display = 'none'; 
+          const parent = e.target.parentElement;
+          if (parent) {
+            const fallback = parent.querySelector('.avatar-fallback');
+            if (fallback) fallback.classList.remove('hidden');
+          }
+        }}
       />
     );
   }
   return (
-    <div className={`${dim} rounded-full bg-gradient-to-br from-primary/60 to-secondary/60 border-2 border-white/15 flex items-center justify-center font-bold text-white shadow-glow-primary select-none`}>
+    <div className={`${dim} avatar-fallback hidden rounded-full bg-gradient-to-br from-primary/60 to-secondary/60 border-2 border-white/15 flex items-center justify-center font-bold text-white shadow-glow-primary select-none`}>
       {initial}
     </div>
   );
@@ -102,7 +110,7 @@ export function Profile() {
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col items-center pb-8"
         >
-          <div className="relative mb-4">
+          <div className="relative mb-4 flex items-center justify-center">
             <Avatar user={user} size="lg" />
             {provider === 'google' && (
               <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full border border-white/20 flex items-center justify-center shadow">
