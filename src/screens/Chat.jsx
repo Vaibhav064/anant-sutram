@@ -211,7 +211,9 @@ function ChatLoadingSkeleton() {
 function ChatInner() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { moodScore, onboardingAnswers, subscriptionTier } = useStore();
+  const { moodScore, onboardingAnswers } = useStore();
+  // subscriptionTier is a getter — must use a selector (destructuring doesn't work with getters in Zustand)
+  const subscriptionTier   = useStore(s => s.user?.subscription || 'free');
   const createChatSession  = useStore(s => s.createChatSession);
   const updateChatSession  = useStore(s => s.updateChatSession);
   const deleteChatSession  = useStore(s => s.deleteChatSession);
@@ -219,8 +221,9 @@ function ChatInner() {
 
   const isPro = subscriptionTier === 'shakti' || subscriptionTier === 'moksha';
 
-  // Pre-message from navigation state (e.g. from low-mood CTA on Home)
-  const preMessage = location?.state?.preMessage || null;
+  // Pre-message AND auto-persona from navigation state (e.g. low-mood CTA on Home)
+  const preMessage   = location?.state?.preMessage   || null;
+  const autoPersona  = location?.state?.autoPersona  || null;
 
   const [messages,        setMessages]        = useState([]);
   const [input,           setInput]           = useState('');
@@ -254,9 +257,15 @@ function ChatInner() {
   // ── Hydration delay (Capacitor async storage) ─────────────────
   useEffect(() => {
     // Give Zustand persist a brief window to rehydrate from Capacitor storage
-    const timer = setTimeout(() => setIsInitializing(false), 350);
+    const timer = setTimeout(() => {
+      setIsInitializing(false);
+      // If navigated with autoPersona, skip selection screen and start immediately
+      if (autoPersona && PERSONA_CONFIGS[autoPersona]) {
+        startNewSession(autoPersona);
+      }
+    }, 350);
     return () => clearTimeout(timer);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

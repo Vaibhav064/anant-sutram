@@ -334,5 +334,24 @@ router.patch('/settings', authMiddleware, async (req, res) => {
   }
 });
 
+// ─── MOCK SUBSCRIBE (Prototype - no real payment) ──────────────────────────────
+router.patch('/subscription', authMiddleware, async (req, res) => {
+  try {
+    const { tier } = req.body;
+    const allowed = ['free', 'shakti', 'moksha'];
+    if (!allowed.includes(tier)) return res.status(400).json({ error: 'Invalid tier' });
+
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      { $set: { subscription: tier } },
+      { new: true }
+    );
+    res.json({ user: userPayload(user) });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update subscription' });
+  }
+});
+
 module.exports = router;
 module.exports.authMiddleware = authMiddleware;
+

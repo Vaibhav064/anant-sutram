@@ -154,11 +154,11 @@ export function Meditate() {
 
 
   return (
-    <div className="h-[100dvh] flex flex-col relative overflow-hidden">
+    <div className={`h-[100dvh] flex flex-col relative overflow-hidden`}>
       
       {/* ── Cinematic Background — always dark during session ── */}
       <div 
-        className="absolute inset-0 z-0 transition-all duration-1000"
+        className="fixed inset-0 z-0 transition-all duration-1000"
         style={{ 
           background: isSessionActive
             ? 'linear-gradient(160deg, #1a1240 0%, #0f2a1e 50%, #1a0a2e 100%)'
@@ -205,10 +205,11 @@ export function Meditate() {
       )}
 
       {/* ── Header ── */}
-      <div className={`sticky top-0 z-30 pt-12 pb-4 px-6 flex items-center justify-between ${isSessionActive ? 'bg-transparent' : ''}`}>
+      <div className={`sticky top-0 z-30 pt-12 pb-4 px-6 flex items-center justify-between transition-colors
+        ${isSessionActive ? 'bg-transparent' : 'bg-[var(--bg-app)]/80 backdrop-blur-md border-b border-gray-100'}`}>
         <button 
           onClick={() => navigate('/home')} 
-          className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors active:scale-90 shadow-sm
+          className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-90 shadow-sm
             ${isSessionActive ? 'bg-white/10 border border-white/20 text-white' : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50'}`
           }
         >
@@ -337,8 +338,9 @@ export function Meditate() {
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 10 }}
-            className="px-6 mt-6 relative z-10 pb-10"
+            className="flex-1 overflow-y-auto relative z-10"
           >
+            <div className="px-6 mt-8 pb-36">
             <h2 className="text-[32px] font-bold text-gray-900 leading-tight mb-2 tracking-tight">How are you<br/>feeling right now?</h2>
             <p className="text-gray-500 text-[15px] mb-8 font-medium">Select a state to align the soundscape.</p>
             
@@ -435,6 +437,7 @@ export function Meditate() {
                      </div>
                   </div>
                </div>
+            </div>
             </div>
           </motion.div>
         )}

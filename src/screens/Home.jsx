@@ -546,7 +546,7 @@ export function Home() {
           className="mx-5 mt-3"
         >
           <button
-            onClick={() => navigate('/chat', { state: { preMessage: `I noticed my mood is quite low today (${moodScore}/10). I could use some support.` } })}
+            onClick={() => navigate('/chat', { state: { autoPersona: 'psychologist', preMessage: `I noticed my mood is quite low today (${moodScore}/10). I could use some support.` } })}
             className="w-full flex items-center gap-4 p-4 rounded-[22px] text-left transition-all active:scale-[0.98]"
             style={{
               background: 'linear-gradient(135deg, rgba(239,68,68,0.10) 0%, rgba(217,70,239,0.10) 100%)',

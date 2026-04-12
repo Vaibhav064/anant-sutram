@@ -45,8 +45,9 @@ export const useStore = create(
       getDisplayName: () => {
         const user = get().user;
         if (!user) return 'Wanderer';
+        // Nickname (set during onboarding) always wins over the account/Google name
+        if (user.nickname && user.nickname.trim() && user.nickname !== 'Wanderer' && user.nickname !== 'Anonymous') return user.nickname.trim();
         if (user.name && user.name.trim()) return user.name.trim();
-        if (user.nickname && user.nickname !== 'Wanderer') return user.nickname;
         if (user.email) return user.email.split('@')[0];
         return 'Wanderer';
       },
@@ -155,6 +156,28 @@ export const useStore = create(
       getAuthHeader: () => {
         const token = localStorage.getItem('token');
         return token ? { 'Authorization': `Bearer ${token}` } : {};
+      },
+
+      // ─── Subscription ────────────────────────────────────────────────────────────
+      setSubscription: async (tier) => {
+        // Optimistically update local state immediately
+        const user = get().user;
+        if (user) set({ user: { ...user, subscription: tier } });
+
+        // Persist to backend
+        try {
+          const { apiFetch } = await import('../lib/api');
+          const res = await apiFetch('/api/auth/subscription', {
+            method: 'PATCH',
+            body: JSON.stringify({ tier }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            set({ user: data.user });
+          }
+        } catch (e) {
+          console.warn('Could not persist subscription to server:', e);
+        }
       },
 
       // Legacy compat

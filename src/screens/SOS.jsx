@@ -47,10 +47,10 @@ export function SOS() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-between h-full py-24 px-6 relative"
+            className="flex flex-col h-full overflow-y-auto"
           >
             {/* Title Section */}
-            <div className="text-center relative z-10">
+            <div className="text-center relative z-10 pt-16 px-6 pb-4 shrink-0">
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -66,7 +66,7 @@ export function SOS() {
             </div>
 
             {/* Breathing orb */}
-            <div className="flex-1 flex items-center justify-center relative scale-110 -mt-10">
+            <div className="flex items-center justify-center py-4 relative shrink-0">
               <div className="relative">
                 {/* Layered Pulsing Backgrounds */}
                 <motion.div
@@ -89,7 +89,7 @@ export function SOS() {
                 <motion.div
                   animate={{ scale: breatheIn ? 1.25 : 0.85 }}
                   transition={{ duration: BREATHE_DURATION / 1000, ease: 'easeInOut' }}
-                  className="w-56 h-56 rounded-full bg-white border border-[#F0C2C2] flex flex-col items-center justify-center shadow-xl relative overflow-hidden group"
+                  className="w-52 h-52 rounded-full bg-white border border-[#F0C2C2] flex flex-col items-center justify-center shadow-xl relative overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-tr from-[#F0C2C2]/30 to-transparent opacity-50" />
                   
@@ -113,8 +113,8 @@ export function SOS() {
               </div>
             </div>
 
-            {/* Integration Section */}
-            <div className="w-full max-w-sm px-4 relative z-10">
+            {/* Action Buttons */}
+            <div className="w-full px-6 pb-10 shrink-0">
               <div className="mb-6 text-center">
                  <div className="inline-flex gap-1.5 justify-center mb-3">
                     {[1,2,3].map(i => (
@@ -144,7 +144,7 @@ export function SOS() {
                 </button>
               </div>
 
-              <div className="mt-8 text-center">
+              <div className="mt-6 text-center">
                 <a href="tel:9152987821" className="inline-flex items-center gap-2 bg-red-50 px-5 py-2.5 rounded-xl border border-red-100 text-red-500 font-bold text-[10px] uppercase tracking-widest hover:bg-red-100 transition-all active:scale-95">
                   <Phone size={12} strokeWidth={3} />
                   Emergency Helpline

@@ -25,7 +25,7 @@ export function BottomNav() {
       <div
         className="fixed bottom-0 left-0 right-0 z-40"
         style={{
-          background: 'rgba(255,255,255,0.84)',
+          background: 'rgba(255,255,255,0.3)',
           backdropFilter: 'blur(28px) saturate(1.8)',
           WebkitBackdropFilter: 'blur(28px) saturate(1.8)',
           boxShadow: '0 -1px 0 rgba(0,0,0,0.06), 0 -4px 20px rgba(80,60,180,0.08)',

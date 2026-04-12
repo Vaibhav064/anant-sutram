@@ -110,7 +110,7 @@ export function Healers() {
         <button onClick={() => navigate('/home')} className="w-10 h-10 rounded-xl bg-surface border border-soft flex items-center justify-center text-sub hover:bg-surface2 transition-colors active:scale-95 shadow-sm">
           <ArrowLeft size={20} />
         </button>
-        <h1 className="text-[17px] font-bold text-main tracking-tight">Connections</h1>
+        <h1 className="text-[17px] font-bold text-main tracking-tight">Healers</h1>
         <div className="w-10 h-10"></div>
       </div>
 

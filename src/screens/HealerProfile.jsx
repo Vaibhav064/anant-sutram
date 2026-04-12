@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Star, Clock, Globe, Award, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,6 +12,10 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { API_BASE, apiFetch } from '../lib/api';
 
 export function HealerProfile() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const { id } = useParams();
   const toast = useToast();
   const user = useStore(s => s.user);
@@ -64,17 +68,19 @@ export function HealerProfile() {
   };
 
   return (
-    <div className="min-h-screen bg-bg pb-nav">
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-app)' }}>
       <PageHeader title={healer.name} subtitle={healer.tagline} />
 
       {/* ── Hero ── */}
       <div className="relative">
-        <div className="h-52 bg-gradient-to-br from-primary/20 via-surface2 to-secondary/10 relative overflow-hidden">
-           <div className="absolute inset-0 bg-primary/10 backdrop-blur-3xl" />
+        <div className="h-44 relative overflow-hidden bg-gradient-to-br from-[#E2E8F0] via-[#F8FAFC] to-[#F1F5F9]">
+          <div className="absolute -top-10 -left-10 w-48 h-48 bg-primary/20 rounded-full blur-[60px]" />
+          <div className="absolute top-[20%] -right-10 w-40 h-40 bg-secondary/15 rounded-full blur-[50px]" />
+          <div className="absolute -bottom-10 left-[40%] w-60 h-60 bg-teal/10 rounded-full blur-[60px]" />
         </div>
-        <div className="absolute bottom-0 left-6 translate-y-1/2 flex items-end gap-6">
+        <div className="absolute bottom-0 left-6 translate-y-1/2 flex items-end gap-4">
           <div className="relative">
-            <div className="w-32 h-32 rounded-[32px] bg-surface border-4 border-bg overflow-hidden shadow-2xl transition-transform hover:scale-105">
+            <div className="w-28 h-28 rounded-[28px] bg-surface border-4 border-bg overflow-hidden shadow-2xl">
               <img src={healer.photo} alt={healer.name} className="w-full h-full object-cover"
                 onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
               />
@@ -87,13 +93,13 @@ export function HealerProfile() {
       </div>
 
       {/* ── Profile Info ── */}
-      <div className="px-6 pt-20 pb-10">
-        <div className="flex items-start justify-between mb-8">
+      <div className="px-6 pt-20 pb-0">
+        <div className="flex items-start justify-between mb-6">
           <div className="flex-1">
-            <h1 className="text-[36px] font-black text-main tracking-tighter leading-none mb-3">{healer.name}</h1>
+            <h1 className="text-[30px] font-black text-main tracking-tighter leading-none mb-2">{healer.name}</h1>
             <div className="flex items-center gap-2">
-               <Award size={14} className="text-primary-light" />
-               <p className="text-sub text-[14px] font-bold tracking-tight">{healer.experience} journey in healing</p>
+               <Award size={13} className="text-primary-light" />
+               <p className="text-sub text-[13px] font-bold tracking-tight">{healer.experience} in healing</p>
             </div>
           </div>
           <div className="flex flex-col items-end gap-1 bg-surface border border-subtle px-4 py-3 rounded-[20px] shadow-sm backdrop-blur-md">
@@ -223,37 +229,43 @@ export function HealerProfile() {
             )}
           </div>
         </div>
-      </div>
 
-      {/* ── Sticky CTA ── */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 ios-glass border-t border-subtle z-30 shadow-2xl">
-        {booked ? (
-          <motion.div 
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-primary/10 border border-primary/20 rounded-[28px] p-5 text-center shadow-glow-primary"
-          >
-            <p className="text-primary font-black text-[18px] tracking-tight">Booking Requested Successfully!</p>
-            <p className="text-sub text-[12px] font-bold mt-1.5 uppercase tracking-widest">{healer.name} will reach out shortly</p>
-          </motion.div>
-        ) : (
-          <button
-            onClick={() => {
-              if (!selectedSession) { toast.error('Please select an engagement plan'); return; }
-              setShowConfirm(true);
-            }}
-            disabled={booking}
-            className="w-full h-18 py-5 rounded-[28px] bg-primary text-white font-black text-[16px] uppercase tracking-[0.2em] shadow-glow-primary btn-glow transform active:scale-[0.98] transition-all disabled:opacity-40 flex items-center justify-center gap-3"
-          >
-            {booking ? (
-              <span className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <>
-                {selectedSession ? `Book ${selectedSession.type} · ₹${selectedSession.price}` : 'Select a Plan to Begin'}
-              </>
-            )}
-          </button>
-        )}
+        {/* ── Action CTA (At the last of the page) ── */}
+        <div className="mt-8 px-2 pb-32">
+          {booked ? (
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-primary/10 border border-primary/20 rounded-[28px] p-8 text-center"
+            >
+              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 size={32} className="text-primary" />
+              </div>
+              <p className="text-primary font-black text-[22px] tracking-tight">Booking Requested! 🎉</p>
+              <p className="text-sub text-[14px] font-bold mt-2 uppercase tracking-widest leading-relaxed">
+                {healer.name} will reach out <br/> to you shortly.
+              </p>
+            </motion.div>
+          ) : (
+            <div className="space-y-4">
+               <button
+                onClick={() => {
+                  if (!selectedSession) { toast.error('Please select an engagement plan'); return; }
+                  setShowConfirm(true);
+                }}
+                disabled={booking}
+                className="w-full py-4 rounded-[22px] bg-primary text-white font-black text-[14px] uppercase tracking-[0.1em] shadow-sm transform active:scale-[0.98] transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+              >
+                {booking ? (
+                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  selectedSession ? `Book ${selectedSession.type} · ₹${selectedSession.price}` : 'Select a Plan From Above'
+                )}
+              </button>
+              <p className="text-center text-muted text-[11px] font-bold uppercase tracking-widest opacity-60">Secure Payment & Session Guarantee</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ── Confirm Modal ── */}
@@ -263,8 +275,8 @@ export function HealerProfile() {
         onConfirm={handleBook}
         isLoading={booking}
         title="Confirm Booking"
-        message={`Book a "${selectedSession?.type}" (${selectedSession?.duration}) with ${healer.name} for ₹${selectedSession?.price}?`}
-        confirmLabel={`Confirm · ₹${selectedSession?.price}`}
+        message={`Book a "${selectedSession?.type}" (${selectedSession?.duration}) session with ${healer.name} for ₹${selectedSession?.price}?`}
+        confirmLabel={`Unlock for ₹${selectedSession?.price}`}
         confirmVariant="primary"
       />
     </div>

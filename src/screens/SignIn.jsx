@@ -126,7 +126,10 @@ export function SignIn() {
   const setUser = useStore(s => s.setUser);
   const user = useStore(s => s.user);
 
-  useEffect(() => { if (user) navigate('/home'); }, [user]);
+
+  // Only auto-redirect to home if user is already logged in when this page first mounts.
+  // Do NOT add user as dependency — that would intercept manual auth navigations.
+  useEffect(() => { if (user && !loading && !googleLoading) navigate('/home'); }, []);
 
   // ─── Load Google Identity Services ────────────────────────────────────────────
   useEffect(() => {
@@ -261,8 +264,9 @@ export function SignIn() {
       document.documentElement.setAttribute('data-theme', 'light');
       localStorage.setItem('anant_theme', 'light');
 
-      if (isLogin) navigate('/home');
-      else navigate('/onboarding');
+      // Send new users or first-time logins to onboarding
+      if (!isLogin || data.isNew) navigate('/onboarding');
+      else navigate('/home');
     } catch (err) {
       setErrorMsg(err.message);
     } finally {
@@ -381,9 +385,9 @@ export function SignIn() {
           className="text-center mb-12"
         >
           <div className="relative inline-flex mb-6">
-            <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full scale-110" />
-            <div className="relative w-20 h-20 rounded-[28px] bg-white border border-subtle flex items-center justify-center shadow-lg">
-              <span className="text-4xl drop-shadow-sm">🪷</span>
+            <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150" />
+            <div className="relative w-32 h-32 rounded-[36px] bg-white border border-subtle flex items-center justify-center shadow-lg p-2 overflow-hidden">
+              <span className="text-[64px] drop-shadow-sm">🪷</span>
             </div>
           </div>
           <h1 className="text-[38px] text-main font-black tracking-tight mb-2 leading-none">
@@ -501,20 +505,7 @@ export function SignIn() {
           </button>
         </div>
 
-        {/* Divider */}
-        <div className="relative my-8 flex items-center justify-center">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-subtle" />
-          </div>
-          <div className="relative bg-bg px-4 text-[11px] text-muted uppercase tracking-[0.2em] font-bold">or</div>
-        </div>
 
-        <button
-          onClick={handleAnon}
-          className="w-full py-3.5 rounded-2xl bg-surface text-sub font-medium text-[14px] border border-subtle hover:bg-surface2 hover:text-main transition-all shadow-sm"
-        >
-          Continue Anonymously
-        </button>
 
         <p className="mt-10 text-center text-muted text-[11px] leading-relaxed px-4">
           By continuing, you agree to our Terms of Service and Privacy Policy.

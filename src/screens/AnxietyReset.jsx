@@ -77,9 +77,9 @@ function PlanCard({ plan, isSelected, onSelect, isPurchased, onPurchase, subscri
           />
           <div className="hidden w-full h-full items-center justify-center">{plan.icon}</div>
         </div>
-        <div className="flex-1 mt-0.5">
-          <h3 className={`font-bold text-[18px] tracking-tight ${plan.accent}`}>{plan.name}</h3>
-          <p className={`text-[12px] font-medium text-sub mt-0.5 leading-snug pr-8`}>{plan.tagline}</p>
+        <div className="flex-1 mt-0.5 min-w-0">
+          <h3 className={`font-bold text-[18px] tracking-tight ${plan.accent} pr-20`}>{plan.name}</h3>
+          <p className={`text-[12px] font-medium text-sub mt-0.5 leading-snug pr-20`}>{plan.tagline}</p>
         </div>
       </div>
 

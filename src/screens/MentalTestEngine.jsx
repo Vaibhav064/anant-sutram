@@ -15,6 +15,150 @@ const STAGE_QUESTIONS = 'questions';
 const STAGE_LOADING = 'loading';
 const STAGE_RESULTS = 'results';
 
+// ── Speedometer Gauge Component ───────────────────────────────────────────────
+function SpeedometerGauge({ score, maxScore, severity }) {
+  // For ALL our tests: lower score = better mental health.
+  // pct=0 → worst (needle left), pct=1 → best (needle right)
+  const pct = 1 - Math.min(Math.max(score / maxScore, 0), 1);
+
+  // Needle angle in our custom space: -90°=left(worst), 0°=up(fair), +90°=right(best)
+  const needleAngleDeg = pct * 180 - 90;
+
+  // SVG layout constants
+  const cx = 100, cy = 100, R = 62, sw = 18;
+  const gapDeg = 4;
+  const segCount = 5;
+  const segDeg = (180 - (segCount - 1) * gapDeg) / segCount; // ≈ 32.8°
+  const labelR = R + sw / 2 + 14;
+  const needleLen = R - 6;
+
+  // Convert "math angle" (0=right, 90=up, 180=left) to SVG coords
+  const toRad = (d) => d * Math.PI / 180;
+  const svgPt = (mathA, radius = R) => ({
+    x: cx + radius * Math.cos(toRad(mathA)),
+    y: cy - radius * Math.sin(toRad(mathA)), // SVG y is inverted
+  });
+
+  // 5 segments from left (180°) to right (0°) going through the top
+  const segConfigs = [
+    { color: '#EF4444', lines: ['VERY', 'POOR'] },
+    { color: '#F97316', lines: ['POOR']         },
+    { color: '#FBBF24', lines: ['FAIR']         },
+    { color: '#84CC16', lines: ['GOOD']         },
+    { color: '#10B981', lines: ['EXCELLENT']    },
+  ];
+
+  const segments = segConfigs.map((cfg, i) => {
+    const startA = 180 - i * (segDeg + gapDeg);
+    const endA   = startA - segDeg;
+    const midA   = (startA + endA) / 2;
+    const s = svgPt(startA);
+    const e = svgPt(endA);
+    const lp = svgPt(midA, labelR);
+    return {
+      ...cfg,
+      // sweep=1 traces the upper arc (clockwise in SVG = counterclockwise in math)
+      d: `M ${s.x.toFixed(2)} ${s.y.toFixed(2)} A ${R} ${R} 0 0 1 ${e.x.toFixed(2)} ${e.y.toFixed(2)}`,
+      lx: lp.x, ly: lp.y,
+      textRot: 90 - midA, // rotate label to be tangent to arc
+    };
+  });
+
+  // Needle tip position (no SVG transform needed — just animate x2,y2 directly)
+  const nx = cx + needleLen * Math.sin(toRad(needleAngleDeg));
+  const ny = cy - needleLen * Math.cos(toRad(needleAngleDeg));
+
+  return (
+    <div className="w-full flex flex-col items-center py-2">
+      <svg
+        viewBox="5 5 190 115"
+        width="100%"
+        style={{ maxWidth: 340, overflow: 'visible' }}
+      >
+        {/* Gray background track */}
+        <path
+          d={`M ${svgPt(180).x} ${svgPt(180).y} A ${R} ${R} 0 0 1 ${svgPt(0).x} ${svgPt(0).y}`}
+          fill="none"
+          stroke="#E5E7EB"
+          strokeWidth={sw + 3}
+          strokeLinecap="butt"
+        />
+
+        {/* Colored segments */}
+        {segments.map((seg, i) => (
+          <path
+            key={i}
+            d={seg.d}
+            fill="none"
+            stroke={seg.color}
+            strokeWidth={sw}
+            strokeLinecap="butt"
+          />
+        ))}
+
+        {/* Labels (radially positioned + rotated) */}
+        {segments.map((seg, i) => (
+          <text
+            key={'lbl' + i}
+            fontSize="5.5"
+            fontWeight="800"
+            fill="#9CA3AF"
+            textAnchor="middle"
+            transform={`rotate(${seg.textRot.toFixed(1)}, ${seg.lx.toFixed(1)}, ${seg.ly.toFixed(1)})`}
+          >
+            {seg.lines.map((line, li) => (
+              <tspan
+                key={li}
+                x={seg.lx.toFixed(1)}
+                y={(seg.ly + (li - (seg.lines.length - 1) / 2) * 7).toFixed(1)}
+              >
+                {line}
+              </tspan>
+            ))}
+          </text>
+        ))}
+
+        {/* Needle — starts pointing straight up, animates to target position */}
+        <motion.line
+          x1={cx} y1={cy}
+          x2={cx} y2={cy - needleLen}
+          animate={{ x2: nx, y2: ny }}
+          transition={{ type: 'spring', stiffness: 55, damping: 14, delay: 0.2 }}
+          stroke="#111827"
+          strokeWidth={3.5}
+          strokeLinecap="round"
+        />
+
+        {/* Center pivot */}
+        <circle cx={cx} cy={cy} r={10} fill="#111827" />
+        <circle cx={cx} cy={cy} r={4}  fill="white"   />
+      </svg>
+
+      {/* Score + label */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="flex flex-col items-center mt-1"
+      >
+        <span
+          className="text-[56px] font-black leading-none tracking-tighter"
+          style={{ color: severity.color }}
+        >
+          {score}
+          <span className="text-[20px] text-gray-300 font-bold ml-1">/ {maxScore}</span>
+        </span>
+        <span
+          className="px-7 py-2.5 rounded-full text-[12px] font-black tracking-[0.15em] uppercase mt-3 border border-black/5"
+          style={{ backgroundColor: severity.color + '18', color: severity.color }}
+        >
+          {severity.label}
+        </span>
+      </motion.div>
+    </div>
+  );
+}
+
 export function MentalTestEngine() {
   const { testId } = useParams();
   const navigate = useNavigate();
@@ -43,13 +187,16 @@ export function MentalTestEngine() {
         const res = await apiFetch(`/api/assessments/${testId}`);
         if (res.ok) {
           const data = await res.json();
-          const mappedHistory = data.history.map(item => ({
-            score: item.score,
-            date: item.createdAt,
-            label: item.severity,
-            color: test.getSeverity(item.score).color,
-            isNew: false
-          })).reverse(); 
+          const mappedHistory = data.history.map(item => {
+            const sev = test.getSeverity(item.score);
+            return {
+              score: item.score,
+              date: item.createdAt,
+              label: sev.label,   // always re-derive from current scoring logic
+              color: sev.color,
+              isNew: false,
+            };
+          }).reverse();
 
           setHistory(mappedHistory);
 
@@ -58,9 +205,9 @@ export function MentalTestEngine() {
             const now = new Date();
             const diffTime = Math.abs(now - new Date(mostRecent.createdAt));
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            if (diffDays < 14) {
+            if (diffDays < 7) {
               setIsLocked(true);
-              setDaysUntilUnlock(14 - diffDays);
+              setDaysUntilUnlock(7 - diffDays);
               setStage(STAGE_RESULTS); 
             }
           }
@@ -141,7 +288,7 @@ export function MentalTestEngine() {
         };
         setHistory(prev => [...prev, newEntry]);
         setIsLocked(true);
-        setDaysUntilUnlock(14);
+        setDaysUntilUnlock(7);
         
         // Success! Final transition
         setTimeout(() => {
@@ -216,9 +363,9 @@ export function MentalTestEngine() {
     const prevAnswer = answers[currentQIndex];
 
     return (
-      <div className="flex flex-col h-full px-6 py-6" style={{ background: 'var(--bg-app)' }}>
+      <div className="flex flex-col min-h-full overflow-y-auto px-6 py-6" style={{ background: 'var(--bg-app)' }}>
         <div className="flex items-center justify-between mt-10 mb-12">
-          <button onClick={handleGoBack} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/50"><ChevronLeft size={20} /></button>
+          <button onClick={handleGoBack} className="w-10 h-10 rounded-full bg-surface border border-soft flex items-center justify-center text-sub active:scale-90"><ChevronLeft size={20} /></button>
           <div className="flex flex-col items-center">
              <span className="text-main font-bold text-[14px] tracking-tight">Question {currentQIndex + 1}</span>
              <span className="text-muted text-[10px] uppercase tracking-widest font-bold">Of {test.questions.length}</span>
@@ -226,35 +373,35 @@ export function MentalTestEngine() {
           <div className="w-10"></div>
         </div>
 
-        <div className="mb-10 min-h-[100px] flex items-center">
-          <h2 className="text-[24px] font-bold text-main leading-tight">
+        <div className="mb-8 min-h-[100px] flex items-center">
+          <h2 className="text-[26px] font-bold text-main leading-tight tracking-tight">
             {q.text}
           </h2>
         </div>
 
-        <div className="flex-1 flex flex-col gap-4">
+        <div className="flex-1 flex flex-col gap-3 pb-10">
           <AnimatePresence mode="popLayout">
             {q.options.map((opt, i) => (
               <motion.button
                 key={`${currentQIndex}-${i}`}
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
                 onClick={() => handleAnswerSelect(opt.score)}
                 className={`w-full p-6 rounded-2xl text-left font-bold transition-all duration-200 border outline-none flex justify-between items-center
                   ${prevAnswer === opt.score 
-                    ? 'bg-primary border-primary text-white shadow-glow-sm' 
-                    : 'bg-surface border-soft text-sub hover:bg-surface2'
+                    ? 'bg-primary border-primary text-white shadow-lg scale-[1.02]' 
+                    : 'bg-surface border-soft text-sub hover:bg-surface2 hover:border-gray-300'
                   }`}
               >
                 <span className="text-[15px]">{opt.text}</span>
-                {prevAnswer === opt.score && <div className="w-2 h-2 rounded-full bg-primary-light" />}
+                {prevAnswer === opt.score && <div className="w-2 h-2 rounded-full bg-white animate-pulse" />}
               </motion.button>
             ))}
           </AnimatePresence>
         </div>
 
-        <div className="mt-8">
+        <div className="mt-8 mb-4">
            <AnimatePresence>
              {showMicrocopy && (
                <motion.div 
@@ -267,7 +414,7 @@ export function MentalTestEngine() {
              )}
            </AnimatePresence>
 
-           <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+           <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
              <motion.div 
                className="h-full bg-primary"
                initial={{ width: `${(currentQIndex / test.questions.length) * 100}%` }}
@@ -294,15 +441,14 @@ export function MentalTestEngine() {
          />
          <ShieldCheck size={32} className="text-primary animate-pulse" />
       </div>
-      <h3 className="font-bold text-[20px] tracking-tight" style={{ color: 'var(--text-main)' }}>Locking in your insights...</h3>
-      <p className="text-[13px] mt-2 font-medium" style={{ color: 'var(--text-muted)' }}>This typically takes a few seconds.</p>
+      <h3 className="font-bold text-[20px] tracking-tight text-main">Locking in your insights...</h3>
+      <p className="text-[13px] mt-2 font-medium text-muted">This typically takes a few seconds.</p>
     </motion.div>
   );
 
   const renderResults = () => {
     const listHistory = [...history].reverse();
     const latestScore = listHistory.length > 0 ? listHistory[0] : null;
-    const prevScore = listHistory.length > 1 ? listHistory[1] : null;
     const severity = latestScore ? test.getSeverity(latestScore.score) : null;
 
     return (
@@ -320,97 +466,23 @@ export function MentalTestEngine() {
           <h1 className="text-[18px] font-bold text-main tracking-tight">Test for {test.title.toLowerCase()} levels</h1>
         </div>
 
-        <div className="px-6 pb-10">
+        <div className="px-6 pb-24">
 
-          {/* ── Score Gauge ── */}
+          {/* ── Speedometer Score Gauge ── */}
           {latestScore && severity && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
               className="mb-8"
             >
-              <h2 className="text-[16px] font-bold text-main mb-4">Your Score</h2>
-              <div className="bg-surface rounded-[24px] p-6 shadow-sm border border-soft flex flex-col items-center">
-                {/* Light-mode gauge built inline */}
-                <div className="relative flex items-center justify-center mb-4" style={{ width: 200, height: 200 }}>
-                  <svg width="200" height="200" viewBox="0 0 120 120" className="-rotate-90">
-                    <circle cx="60" cy="60" r="52" fill="none" stroke="#E5E7EB" strokeWidth="8" strokeLinecap="round" />
-                    <motion.circle
-                      cx="60" cy="60" r="52"
-                      fill="none"
-                      stroke={severity.color}
-                      strokeWidth="8"
-                      strokeLinecap="round"
-                      strokeDasharray={2 * Math.PI * 52}
-                      initial={{ strokeDashoffset: 2 * Math.PI * 52 }}
-                      animate={{ strokeDashoffset: (2 * Math.PI * 52) * (1 - (latestScore.score / test.maxScore)) }}
-                      transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
-                    />
-                    <motion.circle
-                      cx="60" cy="60" r="52"
-                      fill="none"
-                      stroke={severity.color}
-                      strokeWidth="14"
-                      strokeLinecap="round"
-                      strokeDasharray={2 * Math.PI * 52}
-                      opacity="0.12"
-                      initial={{ strokeDashoffset: 2 * Math.PI * 52 }}
-                      animate={{ strokeDashoffset: (2 * Math.PI * 52) * (1 - (latestScore.score / test.maxScore)) }}
-                      transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <motion.span
-                      className="text-[44px] font-black leading-none tracking-tight"
-                      style={{ color: severity.color }}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.7 }}
-                    >
-                      {latestScore.score}
-                    </motion.span>
-                    <span className="text-[11px] text-muted font-bold uppercase tracking-widest mt-1">of {test.maxScore}</span>
-                  </div>
-                </div>
-                {/* Severity label */}
-                <motion.div
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.9 }}
-                  className="px-5 py-2 rounded-full text-[13px] font-black tracking-wide"
-                  style={{ backgroundColor: severity.color + '20', color: severity.color }}
-                >
-                  {severity.label}
-                </motion.div>
-                {/* Severity bar */}
-                <div className="w-full mt-5 px-2">
-                  <div className="flex gap-1.5">
-                    {['normal','mild','moderate','severe'].map((lvl, i) => {
-                      const colors = ['#34D399','#FBBF24','#FB923C','#F87171'];
-                      const levels = ['normal','mild','moderate','severe'];
-                      const currentIdx = levels.indexOf(severity.level);
-                      return (
-                        <motion.div key={lvl} className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: '#E5E7EB' }}>
-                          <motion.div
-                            className="h-full rounded-full"
-                            style={{ backgroundColor: colors[i] }}
-                            initial={{ width: 0 }}
-                            animate={{ width: i <= currentIdx ? '100%' : '0%' }}
-                            transition={{ duration: 0.5, delay: 0.8 + i * 0.1 }}
-                          />
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                  <div className="flex justify-between mt-2">
-                    {['Normal','Mild','Moderate','Severe'].map((l, i) => {
-                      const colors = ['#34D399','#FBBF24','#FB923C','#F87171'];
-                      const levels = ['normal','mild','moderate','severe'];
-                      return <span key={l} className="text-[9px] font-black uppercase tracking-wider" style={{ color: levels.indexOf(severity.level) === i ? colors[i] : '#CBD5E1' }}>{l}</span>;
-                    })}
-                  </div>
-                </div>
+              <h2 className="text-[17px] font-bold text-main mb-6 px-1">Current Assessment</h2>
+              <div className="bg-surface rounded-[32px] p-8 shadow-sm border border-subtle flex flex-col items-center">
+                <SpeedometerGauge
+                  score={latestScore.score}
+                  maxScore={test.maxScore}
+                  severity={severity}
+                />
               </div>
             </motion.div>
           )}
@@ -420,109 +492,99 @@ export function MentalTestEngine() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="mb-8"
+            className="mb-10"
           >
-            <h2 className="text-[16px] font-bold text-main mb-4">Graph Analysis</h2>
-            <div className="bg-surface rounded-[24px] p-5 shadow-sm border border-soft">
+            <h2 className="text-[17px] font-bold text-main mb-4 px-1">Progress History</h2>
+            <div className="bg-surface rounded-[32px] p-6 shadow-sm border border-subtle">
               <SmoothAreaChartLight data={history} maxScore={test.maxScore} />
             </div>
           </motion.div>
 
-          {/* ── Test History ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="mb-8"
-          >
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-[16px] font-bold text-main">Test History</h2>
-              <button className="text-[13px] font-semibold text-primary">View All</button>
-            </div>
+          {/* ── Crisis / Urgent Support — visible if score is severe ── */}
+          {(severity.level === 'severe' || showCrisisNet) && (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+              className="mb-10"
+            >
+              <div 
+                className="p-8 rounded-[32px] border border-red-100 flex flex-col gap-6"
+                style={{ background: 'linear-gradient(135deg, #FFF5F5 0%, #FFFFFF 100%)' }}
+              >
+                <div className="flex items-center gap-3">
+                   <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500">
+                      <AlertCircle size={20} />
+                   </div>
+                   <h3 className="text-[18px] font-bold text-red-900">Crisis Support</h3>
+                </div>
+                
+                <p className="text-[15px] font-medium text-red-700/80 leading-relaxed">
+                  Your current results suggest you might be going through a very difficult time. Remember, you don't have to face this alone.
+                </p>
 
-            <div className="space-y-1">
-              {listHistory.map((item, i) => (
-                <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.25 + i * 0.06 }}
-                  key={i}
-                  className="flex items-center gap-5 py-4 border-b border-soft last:border-0"
-                >
-                  <span className="text-[32px] font-black tracking-tighter min-w-[50px]" style={{ color: item.color || '#7C6AF5' }}>
-                    {item.score}
-                  </span>
-                  <div>
-                    <p className="text-[14px] font-black text-main">{item.label}</p>
-                    <p className="text-[12px] text-muted font-bold uppercase tracking-wider">
-                      {new Date(item.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+                <div className="grid grid-cols-1 gap-3">
+                  <button 
+                    onClick={() => navigate('/chat', { state: { autoPersona: 'psychologist', preMessage: `My assessment for ${test.title} shows I'm in a severe state. I need someone to talk to.` } })}
+                    className="w-full flex items-center justify-center gap-2.5 bg-red-600 text-white font-bold h-14 rounded-2xl shadow-lg shadow-red-200 active:scale-95 transition-transform"
+                  >
+                    <MessageCircle size={18} />
+                    Chat with AI Psychologist
+                  </button>
+                  
+                  <a 
+                    href="tel:9152987821" 
+                    className="w-full flex items-center justify-center gap-2.5 bg-white border-2 border-red-100 text-red-600 font-bold h-14 rounded-2xl active:scale-95 transition-transform"
+                  >
+                    <Phone size={18} />
+                    Call Helpline: 9152987821
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
           {/* ── Description ── */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 }}
-            className="mb-8"
+            transition={{ delay: 0.4 }}
+            className="mb-10 bg-surface/50 border border-soft p-8 rounded-[32px]"
           >
-            <h2 className="text-[16px] font-bold text-main mb-3">Understanding Your Score</h2>
-            <p className="text-[14px] leading-[1.7] text-sub font-medium">
+            <h2 className="text-[17px] font-bold text-main mb-3">Understanding Results</h2>
+            <p className="text-[15px] leading-[1.7] text-sub font-medium">
               {test.description}
             </p>
           </motion.div>
 
-          {/* ── Crisis Safety Net ── */}
-          <AnimatePresence>
-            {showCrisisNet && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-6"
-              >
-                <div className="bg-violet-50 border border-violet-200 rounded-[20px] p-5 text-center">
-                  <div className="flex items-center justify-center gap-2 mb-3">
-                    <Phone size={16} className="text-violet-500" />
-                    <span className="text-[11px] font-bold text-violet-400 uppercase tracking-widest">Support Available</span>
-                  </div>
-                  <p className="text-main text-[14px] font-medium mb-4">
-                    Healing begins with shared strength. Reach out when you're ready.
-                  </p>
-                  <a href="tel:9152987821" className="flex items-center justify-center gap-3 bg-violet-500 hover:bg-violet-600 text-white font-bold px-5 py-3.5 rounded-2xl transition-all active:scale-95">
-                    <Phone size={16} />
-                    <span>Call Helpline: 9152987821</span>
-                  </a>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* ── Take the Test / Retake Button (MindHealthy purple) ── */}
+          {/* ── Take the Test / Retake Button ── */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.5 }}
+            className="pb-12"
           >
-            <button 
-              disabled={isLocked}
-              onClick={() => setStage(STAGE_INTRO)}
-              className={`w-full py-5 rounded-2xl font-bold text-[15px] transition-all shadow-lg
+            <div 
+              className={`w-full py-7 rounded-[32px] font-black text-[17px] tracking-tight transition-all flex flex-col items-center justify-center gap-1
                 ${isLocked 
-                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
-                  : 'bg-primary text-white hover:bg-primary/90 active:scale-[0.98] shadow-[0_8px_24px_rgba(124,106,245,0.35)]'}`
+                  ? 'bg-gray-50 text-gray-400 border border-gray-100' 
+                  : 'bg-primary text-white hover:opacity-95 active:scale-[0.98] shadow-xl shadow-primary/20'}`
               }
+              onClick={() => !isLocked && setStage(STAGE_INTRO)}
             >
-              {isLocked ? '🔒 Assessment Locked' : 'Take the test'}
-            </button>
+              <div className="flex items-center gap-3">
+                {isLocked && <ShieldCheck size={20} className="text-gray-300" />}
+                <span>{isLocked ? 'Assessment Locked' : 'Retake Assessment'}</span>
+              </div>
+            </div>
             
             {isLocked && (
-              <p className="text-center text-[11px] font-medium text-gray-400 mt-3 mb-6">
-                Unlock again in {daysUntilUnlock} days to maintain accuracy
-              </p>
+              <div className="flex flex-col items-center gap-2 mt-6">
+                <p className="text-center text-[15px] font-bold text-gray-400">
+                  Retake unlocks in <span className="text-primary-light font-black underline decoration-2 underline-offset-4">{daysUntilUnlock} days</span>
+                </p>
+                <p className="text-[11px] text-gray-300 font-extrabold uppercase tracking-widest">To maintain clinical accuracy</p>
+              </div>
             )}
           </motion.div>
         </div>
@@ -530,15 +592,13 @@ export function MentalTestEngine() {
     );
   };
 
-
-
   return (
-    <div className="h-[100dvh] overflow-y-auto overflow-x-hidden no-scrollbar" style={{ background: 'var(--bg-app)' }}>
+    <div className="h-[100dvh] overflow-hidden" style={{ background: 'var(--bg-app)' }}>
       <AnimatePresence mode="wait">
-        {stage === STAGE_INTRO && <motion.div key="intro" className="min-h-full">{renderIntro()}</motion.div>}
-        {stage === STAGE_QUESTIONS && <motion.div key="questions" className="h-full">{renderQuestions()}</motion.div>}
-        {stage === STAGE_LOADING && <motion.div key="loading" className="h-full">{renderLoading()}</motion.div>}
-        {stage === STAGE_RESULTS && <motion.div key="results" className="min-h-full">{renderResults()}</motion.div>}
+        {stage === STAGE_INTRO && <motion.div key="intro" className="h-full overflow-y-auto">{renderIntro()}</motion.div>}
+        {stage === STAGE_QUESTIONS && <motion.div key="questions" className="h-full overflow-y-auto">{renderQuestions()}</motion.div>}
+        {stage === STAGE_LOADING && <motion.div key="loading" className="h-full overflow-y-auto">{renderLoading()}</motion.div>}
+        {stage === STAGE_RESULTS && <motion.div key="results" className="h-full overflow-y-auto">{renderResults()}</motion.div>}
       </AnimatePresence>
     </div>
   );
