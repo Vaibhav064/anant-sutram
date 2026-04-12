@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Button } from '../components/ui/Button';
 import { useStore } from '../store/useStore';
+import { ArrowRight } from 'lucide-react';
 
 export function Splash() {
   const navigate = useNavigate();
@@ -33,55 +33,83 @@ export function Splash() {
   if (user && token) return null;
 
   return (
-    <div className="relative min-h-screen bg-bg flex flex-col items-center justify-center overflow-hidden px-6">
+    <div className="relative min-h-[100dvh] bg-bg flex flex-col items-center justify-center overflow-hidden px-8">
+      {/* Dynamic Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.1, 0.2, 0.1],
+            rotate: [0, 90, 0]
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-[20%] -right-[20%] w-[80%] h-[80%] rounded-full bg-primary/20 blur-[120px]"
+        />
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.3, 1],
+            opacity: [0.05, 0.15, 0.05],
+            rotate: [0, -90, 0]
+          }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          className="absolute -bottom-[20%] -left-[20%] w-[80%] h-[80%] rounded-full bg-secondary/20 blur-[120px]"
+        />
+      </div>
 
       <div className="z-10 flex flex-col items-center text-center w-full max-w-sm">
-        <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-[40px] font-bold text-white tracking-tighter"
+        <motion.div
+           initial={{ opacity: 0, scale: 0.8 }}
+           animate={{ opacity: 1, scale: 1 }}
+           transition={{ duration: 1.2, cubicBezier: [0.16, 1, 0.3, 1] }}
+           className="mb-12 relative"
         >
-          ANANT SUTRAM
-        </motion.h1>
-        
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.6 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="text-[17px] font-medium text-white mt-1 tracking-tight"
-        >
-          Talk. Heal. Grow.
-        </motion.p>
-        
-        <div className="h-10"></div>
-        
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.5 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="text-[15px] font-medium tracking-tight text-white/50"
-        >
-          Someone to talk to, anytime.
-        </motion.p>
-        
-        <div className="h-12"></div>
-        
+           <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150" />
+           <div className="relative w-32 h-32 rounded-[36px] glass-morphism border border-white/10 flex items-center justify-center shadow-2xl p-2 overflow-hidden">
+              <img src="/lotus.png" alt="Anant Sutram Lotus" className="w-full h-full object-contain drop-shadow-2xl" />
+           </div>
+        </motion.div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.9 }}
-          className="w-full flex flex-col items-center space-y-6"
+          transition={{ duration: 0.8, delay: 0.2 }}
         >
-          <Button onClick={() => navigate('/onboarding')} className="w-full">
-            Begin Your Journey &rarr;
-          </Button>
+          <h1 className="text-[44px] font-black text-white tracking-[-0.04em] leading-none mb-4">
+            ANANT<br/>SUTRAM
+          </h1>
+          <p className="text-[17px] font-bold text-primary-light uppercase tracking-[0.2em] opacity-80 mb-8">
+            Talk · Heal · Grow
+          </p>
+        </motion.div>
+        
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 0.6 }}
+          className="text-[16px] font-bold tracking-tight text-white/30 mb-16 leading-relaxed"
+        >
+          A sanctuary for your thoughts.<br/>Available whenever you need.
+        </motion.p>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.9, cubicBezier: [0.16, 1, 0.3, 1] }}
+          className="w-full flex flex-col items-center gap-6"
+        >
+          <button 
+            onClick={() => navigate('/onboarding')} 
+            className="w-full h-18 py-5 rounded-[24px] bg-primary text-white font-black text-[16px] uppercase tracking-[0.2em] btn-glow shadow-glow-primary flex items-center justify-center gap-3 transition-all active:scale-[0.98]"
+          >
+            Begin Journey
+            <ArrowRight size={20} />
+          </button>
 
           <button 
             onClick={() => navigate('/signin')}
-            className="text-[13px] text-white/40 hover:text-white/70 transition-colors bg-transparent border-none outline-none cursor-pointer"
+            className="text-[13px] font-black uppercase tracking-[0.2em] text-white/30 hover:text-white transition-colors py-2"
           >
-            I already have an account
+            Resume Journey
           </button>
         </motion.div>
       </div>

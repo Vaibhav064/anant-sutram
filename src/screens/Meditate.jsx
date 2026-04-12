@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Pause, Volume2, VolumeX, Wind, CloudRain, Sun, Moon, Activity, Timer } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Volume2, VolumeX, Wind, CloudRain, Sun, Moon, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
 
@@ -14,11 +14,11 @@ const DURATION_TRACKS = {
 };
 
 const EMOTIONS = [
-  { id: 'stressed', label: 'Stressed', icon: <Activity size={20} />, color: 'text-alert bg-alert/10 border-alert/30', suggestion: 'Box Breathing', durations: [3, 5, 10] },
-  { id: 'anxious', label: 'Anxious', icon: <Wind size={20} />, color: 'text-primary bg-primary/10 border-primary/30', suggestion: 'Grounding Body Scan', durations: [5, 10, 15] },
-  { id: 'tired', label: 'Tired', icon: <Moon size={20} />, color: 'text-secondary bg-secondary/10 border-secondary/30', suggestion: 'Yoga Nidra Deep Rest', durations: [10, 15, 20] },
-  { id: 'overwhelmed', label: 'Overwhelmed', icon: <CloudRain size={20} />, color: 'text-white bg-white/10 border-white/30', suggestion: 'Silent Stillness', durations: [3, 5, 10] },
-  { id: 'calm', label: 'Calm / Focus', icon: <Sun size={20} />, color: 'text-gold bg-gold/10 border-gold/30', suggestion: 'Vipassana Awareness', durations: [10, 15, 20] }
+  { id: 'stressed', label: 'Stressed', icon: <Activity size={18} />, color: '#FFB5B5', textColor: '#A83232', suggestion: 'Box Breathing', durations: [3, 5, 10] },
+  { id: 'anxious', label: 'Anxious', icon: <Wind size={18} />, color: '#C5D5F7', textColor: '#1E2A4A', suggestion: 'Grounding Body Scan', durations: [5, 10, 15] },
+  { id: 'tired', label: 'Tired', icon: <Moon size={18} />, color: '#D5C8F0', textColor: '#2D1F54', suggestion: 'Yoga Nidra Deep Rest', durations: [10, 15, 20] },
+  { id: 'overwhelmed', label: 'Overwhelmed', icon: <CloudRain size={18} />, color: '#E5E7EB', textColor: '#374151', suggestion: 'Silent Stillness', durations: [3, 5, 10] },
+  { id: 'calm', label: 'Calm / Focus', icon: <Sun size={18} />, color: '#FDE68A', textColor: '#92400E', suggestion: 'Vipassana Awareness', durations: [10, 15, 20] }
 ];
 
 const GUIDED_INSTRUCTIONS = {
@@ -149,84 +149,93 @@ export function Meditate() {
   const selectedEmotionObj = EMOTIONS.find(e => e.id === selectedEmotion);
 
   return (
-    <div className="min-h-[100dvh] bg-transparent text-white flex flex-col pb-28 relative z-10">
-      <div className="sticky top-0 bg-bg/80 backdrop-blur-md border-b border-white/5 px-4 py-4 flex items-center justify-between z-20 pt-safe">
-        <button onClick={() => navigate(-1)} className="text-white p-2 hover:bg-white/10 rounded-full transition-colors border-none bg-transparent">
-          <ArrowLeft size={24} />
+    <div className="min-h-[100dvh] flex flex-col pb-28 relative overflow-hidden" style={{ background: 'var(--bg-app)' }}>
+      
+      {/* ── Header ── */}
+      <div className="sticky top-0 z-30 pt-12 pb-4 px-6 flex items-center justify-between" style={{ background: 'var(--bg-app)' }}>
+        <button onClick={() => navigate('/home')} className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors active:scale-90 shadow-sm">
+          <ArrowLeft size={20} />
         </button>
-        <h1 className="text-[18px] font-display font-medium text-white tracking-wide">Meditate</h1>
-        <div className="w-8"></div>
+        <h1 className="text-[17px] font-bold text-gray-900 tracking-tight">Mindful Reset</h1>
+        <div className="w-10 h-10"></div>
       </div>
 
       <AnimatePresence mode="wait">
         {isSessionActive ? (
           <motion.div
             key="session"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
             className="flex-1 flex flex-col items-center justify-center px-8 text-center"
           >
             {/* Breathing Ring */}
-            <div className="relative w-56 h-56 flex items-center justify-center mb-10">
+            <div className="relative w-64 h-64 flex items-center justify-center mb-14">
               <motion.div 
-                animate={{ scale: [1, 1.25, 1], opacity: [0.3, 0.15, 0.3] }}
+                animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.1, 0.3] }}
                 transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
-                className="absolute inset-0 rounded-full bg-primary/20 blur-xl"
+                className="absolute inset-[0%] rounded-full bg-[#C2E8D8] blur-xl"
               />
-              <motion.div 
-                animate={{ scale: [1, 1.15, 1] }}
-                transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
-                className="absolute inset-4 rounded-full border-2 border-primary/40"
-              />
-              <motion.div 
-                animate={{ scale: [1, 1.08, 1] }}
-                transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
-                className="absolute inset-10 rounded-full border border-secondary/30"
-              />
-              <div className="relative z-10 text-center">
-                <div className="text-[44px] font-display font-bold text-white tracking-wider">{formatTime(secondsLeft)}</div>
-                <div className="text-[11px] text-white/40 uppercase tracking-[0.25em] font-bold mt-1">remaining</div>
+              
+              <div className="relative w-56 h-56 rounded-full bg-white shadow-xl flex flex-col items-center justify-center z-10 border border-[#C2E8D8]">
+                <svg className="absolute inset-0 w-full h-full -rotate-90">
+                  <circle cx="112" cy="112" r="108" fill="none" stroke="#E5E7EB" strokeWidth="4" />
+                  <motion.circle 
+                    cx="112" cy="112" r="108" 
+                    fill="none" stroke="#C2E8D8" strokeWidth="6" strokeLinecap="round"
+                    strokeDasharray={2 * Math.PI * 108}
+                    initial={false}
+                    animate={{ strokeDashoffset: (2 * Math.PI * 108) * (1 - (secondsLeft / (secondsLeft || 60))) }}
+                    transition={{ ease: "linear", duration: 1 }}
+                  />
+                </svg>
+                <div className="text-[48px] font-black text-gray-900 tracking-tight leading-none z-10">{formatTime(secondsLeft)}</div>
+                <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mt-2 z-10">Remaining</div>
               </div>
             </div>
 
             {/* Guided instruction */}
-            <motion.p 
+            <motion.div 
               key={currentInstruction}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-[20px] font-display italic text-white/90 max-w-xs leading-relaxed mb-12"
+              className="px-6 py-4 bg-white border border-gray-100 rounded-3xl shadow-sm mb-12 max-w-[280px]"
             >
-              "{currentInstruction}"
-            </motion.p>
+              <p className="text-[16px] font-medium italic text-gray-800 leading-relaxed text-center">
+                "{currentInstruction}"
+              </p>
+            </motion.div>
 
             {/* Sound wave indicator */}
             {isAudioPlaying && (
-              <div className="flex space-x-1.5 items-end h-6 mb-8 opacity-50">
-                <motion.div animate={{ height: [6,20,6] }} transition={{ repeat: Infinity, duration: 1.2 }} className="w-1.5 bg-secondary rounded-full" />
-                <motion.div animate={{ height: [14,6,14] }} transition={{ repeat: Infinity, duration: 0.9 }} className="w-1.5 bg-secondary rounded-full" />
-                <motion.div animate={{ height: [8,18,8] }} transition={{ repeat: Infinity, duration: 1.4 }} className="w-1.5 bg-secondary rounded-full" />
-                <motion.div animate={{ height: [16,8,16] }} transition={{ repeat: Infinity, duration: 1.1 }} className="w-1.5 bg-secondary rounded-full" />
-                <motion.div animate={{ height: [10,16,10] }} transition={{ repeat: Infinity, duration: 1.3 }} className="w-1.5 bg-secondary rounded-full" />
+              <div className="flex space-x-1.5 items-end h-6 mb-8 opacity-60">
+                <motion.div animate={{ height: [6,16,6] }} transition={{ repeat: Infinity, duration: 1.2 }} className="w-1.5 bg-[#4B5563] rounded-full" />
+                <motion.div animate={{ height: [12,6,12] }} transition={{ repeat: Infinity, duration: 0.9 }} className="w-1.5 bg-[#4B5563] rounded-full" />
+                <motion.div animate={{ height: [8,14,8] }} transition={{ repeat: Infinity, duration: 1.4 }} className="w-1.5 bg-[#4B5563] rounded-full" />
+                <motion.div animate={{ height: [14,8,14] }} transition={{ repeat: Infinity, duration: 1.1 }} className="w-1.5 bg-[#4B5563] rounded-full" />
+                <motion.div animate={{ height: [10,14,10] }} transition={{ repeat: Infinity, duration: 1.3 }} className="w-1.5 bg-[#4B5563] rounded-full" />
               </div>
             )}
 
-            <button onClick={stopSession} className="px-8 py-3.5 rounded-full border border-white/20 text-white/70 font-medium hover:bg-white/10 transition-colors text-[14px]">
+            <button 
+              onClick={stopSession} 
+              className="px-10 py-4 rounded-[20px] bg-white border border-red-100 text-red-500 font-bold text-[13px] hover:bg-red-50 transition-all shadow-sm active:scale-95"
+            >
               End Session
             </button>
           </motion.div>
         ) : (
           <motion.div
             key="selection"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="px-6 mt-8"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 10 }}
+            className="px-6 mt-6 relative z-10"
           >
-            <h2 className="text-[32px] font-display font-bold leading-tight mb-2">How is your mind <br/>right now?</h2>
-            <p className="text-white/50 text-[14px]">Select how you feel to get a personalized session.</p>
+            <h2 className="text-[32px] font-bold text-gray-900 leading-tight mb-2 tracking-tight">How are you<br/>feeling right now?</h2>
+            <p className="text-gray-500 text-[15px] mb-8 font-medium">Select a state to align the soundscape.</p>
             
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="grid grid-cols-2 gap-3">
               {EMOTIONS.map(emo => {
                 const isSelected = selectedEmotion === emo.id;
                 const isRecommended = defaultEmotion === emo.id;
@@ -235,17 +244,25 @@ export function Meditate() {
                   <button
                     key={emo.id}
                     onClick={() => setSelectedEmotion(emo.id)}
-                    className={`relative px-4 py-3 rounded-2xl flex items-center space-x-3 border transition-all duration-300
-                      ${isSelected ? emo.color + ' border-opacity-100 shadow-lg scale-[1.02]' : 'bg-white/5 border-white/5 text-white/70 hover:bg-white/10 hover:border-white/20'}
+                    className={`relative p-5 rounded-3xl flex flex-col items-start gap-4 transition-all duration-300 overflow-hidden text-left border shadow-sm
+                      ${isSelected ? 'bg-white border-[#1A3D2E] scale-[1.02] shadow-md z-10' : 'bg-white border-gray-100 hover:border-gray-200'}
                     `}
                   >
+                    <div 
+                      className={`w-12 h-12 rounded-[18px] flex items-center justify-center my-1 transition-transform group-hover:scale-110`}
+                      style={{ backgroundColor: isSelected ? emo.color : '#F3F4F6', color: isSelected ? emo.textColor : '#6B7280' }}
+                    >
+                       {emo.icon}
+                    </div>
+                    <div>
+                       <span className={`font-bold text-[15px] ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>{emo.label}</span>
+                    </div>
+
                     {isRecommended && !selectedEmotion && (
-                      <div className="absolute -top-2 -right-2 bg-primary text-white text-[9px] font-bold px-2.5 py-0.5 rounded-full shadow-lg border border-primary/50 tracking-wider">
-                        FOR YOU
+                      <div className="absolute top-4 right-4 bg-[#C2E8D8] text-[#1A3D2E] text-[9px] font-bold px-2 py-1 rounded-[6px] tracking-widest uppercase shadow-sm">
+                        For You
                       </div>
                     )}
-                    <div className={isSelected ? '' : 'text-white/40'}>{emo.icon}</div>
-                    <span className="font-medium text-[14px]">{emo.label}</span>
                   </button>
                 )
               })}
@@ -253,76 +270,64 @@ export function Meditate() {
 
             {selectedEmotion && selectedEmotionObj && (
               <motion.div 
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-10 bg-[#1A1A2E]/50 border border-primary/20 p-6 rounded-3xl backdrop-blur-md shadow-[0_10px_30px_rgba(139,92,246,0.15)]"
+                className="mt-8 bg-white border border-[#C2E8D8]/50 p-6 rounded-[32px] shadow-sm relative overflow-hidden"
               >
-                <div className="text-[11px] uppercase tracking-widest text-primary font-bold mb-2">Guided Session</div>
-                <h3 className="text-[24px] font-display text-white mb-2 font-bold leading-snug">
-                  {selectedEmotionObj.suggestion}
-                </h3>
-                <p className="text-white/40 text-[13px] mb-6">Real-time guided instructions with your meditation music.</p>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#C2E8D8] opacity-20 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none" />
                 
-                <div className="flex space-x-3">
+                <div className="inline-flex items-center gap-1.5 mb-2">
+                   <div className="w-1.5 h-1.5 rounded-full bg-[#1A3D2E] animate-pulse" />
+                   <p className="text-[10px] font-bold text-[#1A3D2E] uppercase tracking-widest">Recommended Plan</p>
+                </div>
+                
+                <h3 className="text-[22px] font-bold text-gray-900 mb-6 tracking-tight leading-tight">
+                   {selectedEmotionObj.suggestion}
+                </h3>
+                
+                <div className="grid grid-cols-3 gap-3">
                   {selectedEmotionObj.durations.map(d => (
                     <button 
                       key={d}
                       onClick={() => startSession(selectedEmotion, d)}
-                      className="flex-1 bg-gradient-to-r from-primary to-secondary text-white py-3.5 rounded-full font-bold text-[14px] shadow-[0_4px_20px_rgba(139,92,246,0.3)] hover:shadow-[0_4px_25px_rgba(139,92,246,0.5)] transition-all flex items-center justify-center space-x-2"
+                      className="py-4 rounded-xl bg-[#C2E8D8]/30 border border-[#C2E8D8] text-[#1A3D2E] flex flex-col items-center justify-center transition-all active:scale-95 hover:bg-[#C2E8D8]/50"
                     >
-                      <Timer size={16} />
-                      <span>{d} min</span>
+                      <span className="text-[18px] font-bold tracking-tight leading-none">{d}</span>
+                      <span className="text-[9px] font-bold uppercase tracking-widest mt-1 opacity-70">Min</span>
                     </button>
                   ))}
                 </div>
               </motion.div>
             )}
 
-            {/* Ambient sound controls */}
-            <div className="mt-10 bg-[#0C0C1A] border border-white/10 rounded-3xl p-6 relative overflow-hidden shadow-xl">
-              <div className="absolute -right-10 -top-10 w-40 h-40 bg-secondary/15 blur-[50px] rounded-full pointer-events-none" />
-              
-              <h3 className="text-[18px] font-display font-bold mb-1">Ambient Soundscape</h3>
-              <p className="text-white/40 text-[13px] mb-6 pr-16 leading-relaxed">Your meditation music plays globally across the app.</p>
-              
-              <div className="flex items-center space-x-5">
-                <button 
-                  onClick={() => {
-                    if (!isAudioPlaying) {
-                      // Default to the 5-min track for ambient listening
-                      setActiveTrack(DURATION_TRACKS[5]);
-                    }
-                    setAudioPlaying(!isAudioPlaying);
-                  }}
-                  className="w-14 h-14 shrink-0 rounded-full bg-white text-[#0C0C1A] flex items-center justify-center hover:scale-105 transition-transform shadow-[0_4px_20px_rgba(255,255,255,0.2)] border-none"
-                >
-                  {isAudioPlaying ? <Pause size={24} /> : <Play size={24} className="ml-1" />}
-                </button>
-                
-                <div className="flex-1 flex flex-col space-y-3">
-                  <div className="flex justify-between items-center text-white/50 text-[11px] uppercase font-bold tracking-widest">
-                    <VolumeX size={14} />
-                    <span>{Math.round(audioVolume * 100)}%</span>
-                    <Volume2 size={14} />
+            {/* Audio Controls */}
+            <div className="mt-6 bg-white border border-gray-100 rounded-3xl p-5 shadow-sm relative overflow-hidden">
+               <div className="flex items-center gap-5">
+                  <button 
+                    onClick={() => {
+                      if (!isAudioPlaying) setActiveTrack(DURATION_TRACKS[5]);
+                      setAudioPlaying(!isAudioPlaying);
+                    }}
+                    className="w-14 h-14 shrink-0 rounded-[20px] bg-gray-50 border border-gray-100 text-gray-700 flex items-center justify-center active:scale-95 transition-all shadow-sm"
+                  >
+                    {isAudioPlaying ? <Pause size={24} /> : <Play size={24} className="translate-x-0.5" />}
+                  </button>
+                  
+                  <div className="flex-1 min-w-0 pr-2">
+                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2.5">Ambient Volume</p>
+                     <div className="flex items-center gap-3">
+                        <VolumeX size={14} className="text-gray-300 shrink-0" />
+                        <input 
+                          type="range"
+                          min="0" max="1" step="0.01"
+                          value={audioVolume}
+                          onChange={(e) => setAudioVolume(parseFloat(e.target.value))}
+                          className="flex-1 accent-[#C2E8D8] h-1.5 bg-gray-100 rounded-full appearance-none outline-none cursor-pointer"
+                        />
+                        <Volume2 size={14} className="text-gray-300 shrink-0" />
+                     </div>
                   </div>
-                  <input 
-                    type="range"
-                    min="0" max="1" step="0.01"
-                    value={audioVolume}
-                    onChange={(e) => setAudioVolume(parseFloat(e.target.value))}
-                    className="w-full accent-secondary h-1.5 bg-white/10 rounded-full appearance-none outline-none cursor-pointer"
-                  />
-                </div>
-              </div>
-              
-              {isAudioPlaying && (
-                <div className="absolute top-6 right-6 flex space-x-1 items-end h-5 opacity-40">
-                   <motion.div animate={{ height: [5,16,5] }} transition={{ repeat: Infinity, duration: 1.2 }} className="w-1.5 bg-secondary rounded-full" />
-                   <motion.div animate={{ height: [10,6,10] }} transition={{ repeat: Infinity, duration: 0.9 }} className="w-1.5 bg-secondary rounded-full" />
-                   <motion.div animate={{ height: [6,14,6] }} transition={{ repeat: Infinity, duration: 1.5 }} className="w-1.5 bg-secondary rounded-full" />
-                   <motion.div animate={{ height: [12,5,12] }} transition={{ repeat: Infinity, duration: 1.1 }} className="w-1.5 bg-secondary rounded-full" />
-                </div>
-              )}
+               </div>
             </div>
           </motion.div>
         )}

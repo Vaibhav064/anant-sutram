@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Star, Filter } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { Badge, VerifiedBadge, OnlineDot } from '../components/ui/Badge';
+import { Search, Star, ChevronRight, X, ArrowLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const HEALERS_DATA = [
   {
@@ -27,7 +26,8 @@ export const HEALERS_DATA = [
       { type: 'Quick Check-in', duration: '15 min', price: 499 },
       { type: 'Deep Healing Session', duration: '45 min', price: 1499 },
       { type: 'Energy Package', duration: '3 sessions', price: 3999 },
-    ]
+    ],
+    emoji: '🌸',
   },
   {
     id: '2',
@@ -44,14 +44,15 @@ export const HEALERS_DATA = [
     bio: 'Dakshina Charan is a seasoned Pranic Healer and relationship advisor with over a decade of transformative practice. She helps individuals decode emotional wounds through energy work and guided introspection.',
     specialties: ['Advanced Pranic Healing', 'Marital & Family Counseling', 'Chakra Balancing & Aura Cleansing', 'Grief & Loss Processing'],
     reviews: [
-      { name: 'Meera S.', text: 'Dakshina ma\'am has a gift. She identified my emotional blocks in the first session itself. Truly healing.', rating: 5 },
-      { name: 'Rohit K.', text: 'Her pranic healing sessions brought a sense of peace I hadn\'t felt in years.', rating: 5 },
+      { name: 'Meera S.', text: "Dakshina ma'am has a gift. She identified my emotional blocks in the first session itself. Truly healing.", rating: 5 },
+      { name: 'Rohit K.', text: "Her pranic healing sessions brought a sense of peace I hadn't felt in years.", rating: 5 },
     ],
     sessionTypes: [
       { type: 'Quick Check-in', duration: '15 min', price: 599 },
       { type: 'Deep Healing Session', duration: '45 min', price: 1799 },
       { type: 'Transformation Package', duration: '5 sessions', price: 6999 },
-    ]
+    ],
+    emoji: '🌿',
   },
   {
     id: '3',
@@ -75,15 +76,16 @@ export const HEALERS_DATA = [
       { type: 'Quick Check-in', duration: '15 min', price: 399 },
       { type: 'Deep Session', duration: '45 min', price: 1199 },
       { type: 'Growth Package', duration: '3 sessions', price: 2999 },
-    ]
+    ],
+    emoji: '🧭',
   },
 ];
 
 const FILTERS = [
-  { id: 'all', label: 'All' },
-  { id: 'pranic', label: 'Pranic' },
-  { id: 'life-coach', label: 'Life Coach' },
-  { id: 'relationship', label: 'Relationship' },
+  { id: 'all', label: 'All Healers', emoji: '✨' },
+  { id: 'pranic', label: 'Pranic', emoji: '🌸' },
+  { id: 'life-coach', label: 'Life Coach', emoji: '🧭' },
+  { id: 'relationship', label: 'Relationship', emoji: '💙' },
 ];
 
 export function Healers() {
@@ -101,132 +103,173 @@ export function Healers() {
   });
 
   return (
-    <div className="min-h-screen bg-bg pb-nav">
+    <div className="min-h-[100dvh] pb-32 flex flex-col" style={{ background: 'var(--bg-app)' }}>
+      
       {/* ── Header ── */}
-      <div className="px-5 pt-12 pb-5 sticky top-0 ios-glass z-20 border-b border-white/5">
-        <h1 className="text-[28px] font-bold text-white mb-5 tracking-tight">Find a Healer</h1>
+      <div className="sticky top-0 z-30 pt-12 pb-4 px-6 flex items-center justify-between" style={{ background: 'var(--bg-app)' }}>
+        <button onClick={() => navigate('/home')} className="w-10 h-10 rounded-xl bg-surface border border-soft flex items-center justify-center text-sub hover:bg-surface2 transition-colors active:scale-95 shadow-sm">
+          <ArrowLeft size={20} />
+        </button>
+        <h1 className="text-[17px] font-bold text-main tracking-tight">Connections</h1>
+        <div className="w-10 h-10"></div>
+      </div>
 
-        {/* Search */}
-        <div className="relative mb-4">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
+      {/* ── Search & Hero ── */}
+      <div className="px-6 pt-2 pb-6">
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+          <p className="text-[10px] font-bold text-[#F5B041] uppercase tracking-[0.3em] mb-1.5 flex items-center gap-1.5">
+             <span className="w-1.5 h-1.5 rounded-full bg-[#F5B041]" /> Verified Professionals
+          </p>
+          <h2 className="text-[32px] font-bold text-main tracking-tight leading-none mb-3">
+            Your Support<br/>Network
+          </h2>
+          <p className="text-sub text-[15px] font-medium mb-6">Find a healer who resonates with your journey.</p>
+        </motion.div>
+
+        <div className="relative group">
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-[#F5B041] transition-colors" />
           <input
             type="text"
             placeholder="Search by name or specialty..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full bg-surface2 border border-white/6 rounded-2xl pl-10 pr-4 py-3 text-[14px] text-white focus:outline-none focus:border-primary/40 transition-all placeholder:text-white/25"
+            className="w-full bg-surface border border-soft rounded-[20px] pl-11 pr-10 py-3.5 text-[15px] text-main focus:outline-none focus:border-[#F5B041] focus:ring-2 focus:ring-[#F5B041]/10 transition-all font-medium placeholder:text-muted shadow-sm"
           />
-        </div>
-
-        {/* Filter row */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar">
-          {FILTERS.map(f => (
-            <button
-              key={f.id}
-              onClick={() => setActiveFilter(f.id)}
-              className={`whitespace-nowrap px-4 py-2 rounded-full text-[12px] font-semibold transition-all border shrink-0
-                ${activeFilter === f.id ? 'bg-primary text-white border-primary shadow-btn' : 'bg-surface2 text-white/50 border-white/6 hover:border-white/15'}`}
-            >
-              {f.label}
+          {searchQuery && (
+            <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-sub hover:text-main transition-colors">
+              <X size={12} />
             </button>
-          ))}
-          <button
-            onClick={() => setShowAvailableOnly(!showAvailableOnly)}
-            className={`whitespace-nowrap px-4 py-2 rounded-full text-[12px] font-semibold transition-all border shrink-0 flex items-center gap-1.5
-              ${showAvailableOnly ? 'bg-success/20 text-success border-success/30' : 'bg-surface2 text-white/50 border-white/6 hover:border-white/15'}`}
-          >
-            <OnlineDot size="xs" animated={false} /> Available now
-          </button>
+          )}
         </div>
       </div>
 
-      {/* ── Guide Type Intro ── */}
-      <div className="px-5 pt-6 pb-3">
-        <p className="text-white/30 text-[11px] font-bold uppercase tracking-widest mb-4">Verified Professionals</p>
+      {/* ── Filters ── */}
+      <div className="px-6 mb-6">
+        <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-2">
+          {FILTERS.map(f => (
+            <motion.button
+              key={f.id}
+              onClick={() => setActiveFilter(f.id)}
+              whileTap={{ scale: 0.95 }}
+              className={`whitespace-nowrap flex items-center gap-1.5 px-4 py-2.5 rounded-[14px] text-[13px] font-bold transition-all border shrink-0
+                ${activeFilter === f.id
+                  ? 'bg-surface border-[#FDE68A] text-[#92400E] shadow-sm'
+                  : 'bg-transparent text-sub border-soft hover:bg-surface'}`}
+            >
+              <span className="text-[14px]">{f.emoji}</span> {f.label}
+            </motion.button>
+          ))}
+          <motion.button
+            onClick={() => setShowAvailableOnly(!showAvailableOnly)}
+            whileTap={{ scale: 0.95 }}
+            className={`whitespace-nowrap flex items-center gap-2 px-4 py-2.5 rounded-[14px] text-[13px] font-bold transition-all border shrink-0
+              ${showAvailableOnly ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm' : 'bg-transparent text-sub border-soft hover:bg-surface'}`}
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-40"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            Online Now
+          </motion.button>
+        </div>
       </div>
 
       {/* ── Healer Cards ── */}
-      <div className="px-5 space-y-4 pb-6">
-        {filtered.map((h, i) => (
-          <motion.div
-            key={h.id}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.08 }}
-            onClick={() => navigate(`/healers/${h.id}`)}
-            className="bg-surface2 border border-white/8 rounded-2xl p-5 cursor-pointer hover:border-white/18 hover:bg-surface3 transition-all duration-200 active:scale-[0.99]"
-          >
-            <div className="flex items-start gap-4">
-              {/* Avatar */}
-              <div className="relative shrink-0">
-                <div className="w-[68px] h-[68px] rounded-2xl bg-gradient-to-br from-primary/30 to-secondary/30 border border-white/10 flex items-center justify-center overflow-hidden">
-                  <img src={h.photo} alt={h.name} className="w-full h-full object-cover"
-                    onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
-                  />
-                  <div className="hidden w-full h-full items-center justify-center text-[28px]">🧘‍♀️</div>
+      <div className="px-5 space-y-4">
+        <AnimatePresence mode="popLayout">
+          {filtered.map((h, i) => (
+            <motion.div
+              key={h.id}
+              layout
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ delay: i * 0.05 }}
+              onClick={() => navigate(`/healers/${h.id}`)}
+              className="bg-surface rounded-[28px] p-5 shadow-sm border border-subtle cursor-pointer active:scale-[0.98] transition-transform relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#FDE68A] opacity-15 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none" />
+
+              <div className="flex items-start gap-4">
+                <div className="relative shrink-0">
+                  <div className="w-[72px] h-[72px] rounded-[20px] bg-surface2 border border-subtle flex items-center justify-center overflow-hidden">
+                    <img
+                      src={h.photo}
+                      alt={h.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                    <div className="hidden w-full h-full items-center justify-center text-[32px]">{h.emoji}</div>
+                  </div>
+                  {h.isVerified && (
+                    <div className="absolute -bottom-1 -right-1 z-10 w-5 h-5 bg-blue-500 rounded-full border-2 border-white flex items-center justify-center text-[10px] text-white font-bold">✓</div>
+                  )}
+                  {h.isAvailableNow && (
+                    <div className="absolute -top-1 -right-1 z-10 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-white" />
+                  )}
                 </div>
-                {h.isVerified && (
-                  <div className="absolute -bottom-1.5 -right-1.5 z-10">
-                    <VerifiedBadge />
+
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <div className="flex items-start justify-between mb-0.5">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-bold text-[17px] text-main tracking-tight leading-none truncate pr-2">{h.name}</h3>
+                      <p className="text-[12px] text-sub mt-1.5 font-medium truncate">{h.tagline}</p>
+                    </div>
+                    <div className="shrink-0 w-8 h-8 rounded-full bg-surface2 border border-subtle flex items-center justify-center text-muted">
+                      <ChevronRight size={16} />
+                    </div>
                   </div>
-                )}
-                {h.isAvailableNow && (
-                  <div className="absolute -top-1 -right-1 z-10">
-                    <OnlineDot size="sm" />
+
+                    <div className="flex items-center gap-2 mt-3 flex-wrap">
+                    <div className="flex items-center gap-1 bg-surface2 px-2 py-1 rounded-[8px] border border-soft">
+                      <Star size={11} className="text-[#F5B041] fill-[#F5B041]" />
+                      <span className="text-main font-bold text-[11px]">{h.rating}</span>
+                      <span className="text-muted font-bold text-[10px]">({h.reviewCount})</span>
+                    </div>
+                    <span className="text-main font-bold text-[9px] uppercase tracking-widest bg-surface2 border border-soft px-2.5 py-1 rounded-[8px]">{h.experience}</span>
+                    {h.isAvailableNow && (
+                      <span className="text-emerald-700 font-bold text-[9px] uppercase tracking-widest bg-emerald-100 px-2.5 py-1 rounded-[8px]">Available</span>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
 
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between mb-1">
-                  <div className="min-w-0">
-                    <h3 className="font-bold text-[16px] text-white truncate">{h.name}</h3>
-                    <p className="text-[11px] text-white/40 mt-0.5 truncate">{h.tagline}</p>
-                  </div>
-                  <div className="text-right shrink-0 ml-3">
-                    <p className="font-bold text-[15px] text-white">₹{h.priceQuick}</p>
-                    <p className="text-[10px] text-white/30">/15 min</p>
-                  </div>
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-soft">
+                <div className="flex gap-1.5">
+                  {h.languages.slice(0, 2).map(l => (
+                    <span key={l} className="text-[9px] text-sub font-bold px-2 py-1 rounded-[6px] border border-soft uppercase tracking-widest bg-surface2">
+                      {l}
+                    </span>
+                  ))}
                 </div>
-
-                {/* Rating */}
-                <div className="flex items-center gap-1.5 mt-2">
-                  <Star size={12} className="text-gold fill-gold" />
-                  <span className="text-[12px] text-gold font-bold">{h.rating}</span>
-                  <span className="text-[11px] text-white/30">({h.reviewCount})</span>
-                  <span className="text-white/20 mx-1">·</span>
-                  <span className="text-[11px] text-primary-light font-medium">{h.experience}</span>
-                </div>
-
-                {/* Languages + Booking */}
-                <div className="flex items-center justify-between mt-3">
-                  <div className="flex gap-1.5">
-                    {h.languages.slice(0, 3).map(l => (
-                      <span key={l} className="text-[9px] text-white/40 px-2 py-0.5 rounded-full bg-white/5 border border-white/5 uppercase tracking-wider font-medium">
-                        {l.slice(0, 3)}
-                      </span>
-                    ))}
-                  </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); navigate(`/healers/${h.id}`); }}
-                    className="bg-primary/20 text-primary-light border border-primary/30 px-4 py-1.5 rounded-full text-[11px] font-bold hover:bg-primary/30 transition-colors"
-                  >
-                    Book
-                  </button>
+                <div className="flex items-center gap-1">
+                  <span className="text-[11px] text-muted font-bold uppercase tracking-widest">from </span>
+                  <span className="text-[16px] font-black text-main leading-none">₹{h.priceQuick}</span>
                 </div>
               </div>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          ))}
+        </AnimatePresence>
 
         {filtered.length === 0 && (
-          <div className="text-center py-20">
-            <span className="text-[48px] block mb-4">🔍</span>
-            <p className="text-white/40 text-[16px] font-medium mb-2">No healers found</p>
-            <button onClick={() => { setActiveFilter('all'); setSearchQuery(''); setShowAvailableOnly(false); }}
-              className="text-primary text-[14px] font-semibold mt-3">Clear filters</button>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-20 bg-surface border border-soft border-dashed rounded-[32px] shadow-sm"
+          >
+            <span className="text-[40px] block mb-3">🔍</span>
+            <p className="text-main text-[16px] font-bold mb-1">No healers found</p>
+            <p className="text-sub text-[13px] font-medium mb-4">Try adjusting your filters or search terms.</p>
+            <button
+              onClick={() => { setActiveFilter('all'); setSearchQuery(''); setShowAvailableOnly(false); }}
+              className="text-[#92400E] bg-[#FDE68A]/30 px-4 py-2 rounded-xl font-bold text-[12px] uppercase tracking-widest hover:bg-[#FDE68A]/50 transition-colors"
+            >
+              Clear filters
+            </button>
+          </motion.div>
         )}
       </div>
     </div>

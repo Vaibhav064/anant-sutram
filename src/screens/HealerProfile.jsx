@@ -69,99 +69,118 @@ export function HealerProfile() {
 
       {/* ── Hero ── */}
       <div className="relative">
-        <div className="h-36 bg-gradient-to-br from-primary/20 via-surface2 to-secondary/10" />
-        <div className="absolute bottom-0 left-5 translate-y-1/2">
+        <div className="h-52 bg-gradient-to-br from-primary/20 via-surface2 to-secondary/10 relative overflow-hidden">
+           <div className="absolute inset-0 bg-primary/10 backdrop-blur-3xl" />
+        </div>
+        <div className="absolute bottom-0 left-6 translate-y-1/2 flex items-end gap-6">
           <div className="relative">
-            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary/30 to-secondary/30 border-2 border-bg overflow-hidden shadow-card">
+            <div className="w-32 h-32 rounded-[32px] bg-white/5 border-4 border-[#120F20] overflow-hidden shadow-2xl transition-transform hover:scale-105">
               <img src={healer.photo} alt={healer.name} className="w-full h-full object-cover"
-                onError={(e) => { e.target.style.display = 'none'; }}
+                onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
               />
+              <div className="hidden w-full h-full items-center justify-center text-[48px] bg-white/5">🧘‍♀️</div>
             </div>
-            {healer.isVerified && <div className="absolute -bottom-1 -right-1"><VerifiedBadge /></div>}
-            {healer.isAvailableNow && <div className="absolute -top-1 -right-1"><OnlineDot size="md" /></div>}
+            {healer.isVerified && <div className="absolute -bottom-1 -right-1 scale-125 drop-shadow-xl"><VerifiedBadge /></div>}
+            {healer.isAvailableNow && <div className="absolute -top-1 -right-1 z-10"><OnlineDot size="md" /></div>}
           </div>
         </div>
       </div>
 
       {/* ── Profile Info ── */}
-      <div className="px-5 pt-16 pb-6">
-        <div className="flex items-start justify-between mb-3">
-          <div>
-            <h1 className="text-[24px] font-bold text-white tracking-tight">{healer.name}</h1>
-            <p className="text-white/40 text-[13px] mt-0.5">{healer.experience} experience</p>
+      <div className="px-6 pt-20 pb-10">
+        <div className="flex items-start justify-between mb-8">
+          <div className="flex-1">
+            <h1 className="text-[36px] font-black text-white tracking-tighter leading-none mb-3">{healer.name}</h1>
+            <div className="flex items-center gap-2">
+               <Award size={14} className="text-primary-light" />
+               <p className="text-white/40 text-[14px] font-bold tracking-tight">{healer.experience} journey in healing</p>
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <Star size={15} className="text-gold fill-gold" />
-            <span className="text-gold font-bold text-[16px]">{healer.rating}</span>
-            <span className="text-white/30 text-[12px] ml-1">({healer.reviewCount})</span>
+          <div className="flex flex-col items-end gap-1 bg-white/5 border border-white/10 px-4 py-3 rounded-[20px] backdrop-blur-md">
+            <div className="flex items-center gap-1.5">
+               <Star size={16} className="text-gold fill-gold" />
+               <span className="text-white font-black text-[20px] leading-none tracking-tight">{healer.rating}</span>
+            </div>
+            <span className="text-white/30 text-[10px] font-black uppercase tracking-widest">{healer.reviewCount} Reviews</span>
           </div>
         </div>
 
         {/* Tags */}
-        <div className="flex flex-wrap gap-2 mb-5">
+        <div className="flex flex-wrap gap-2.5 mb-8">
           {healer.specialties.slice(0, 3).map(s => (
-            <Badge key={s} variant="primary" size="sm">{s}</Badge>
+            <span key={s} className="px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary-light text-[11px] font-black uppercase tracking-[0.1em]">
+               {s}
+            </span>
           ))}
         </div>
 
-        {/* Meta info */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="bg-surface2 border border-white/6 rounded-2xl p-4">
-            <Clock size={16} className="text-primary mb-2" />
-            <p className="text-white/40 text-[11px] uppercase tracking-wider mb-1">Session from</p>
-            <p className="text-white font-bold text-[16px]">₹{healer.priceQuick}</p>
+        {/* Status Blocks */}
+        <div className="grid grid-cols-2 gap-4 mb-10">
+          <div className="glass border border-white/5 rounded-[24px] p-5 shadow-lg relative overflow-hidden group hover:border-white/15 transition-all">
+            <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-primary/10 rounded-full blur-2xl" />
+            <Clock size={18} className="text-primary-light mb-4" />
+            <p className="text-white/30 text-[10px] font-black uppercase tracking-widest mb-1.5 leading-none">Standard Rate</p>
+            <p className="text-white font-black text-[24px] tracking-tighter leading-none">₹{healer.priceQuick}</p>
           </div>
-          <div className="bg-surface2 border border-white/6 rounded-2xl p-4">
-            <Globe size={16} className="text-teal mb-2" />
-            <p className="text-white/40 text-[11px] uppercase tracking-wider mb-1">Languages</p>
-            <p className="text-white font-semibold text-[14px]">{healer.languages.join(', ')}</p>
+          <div className="glass border border-white/5 rounded-[24px] p-5 shadow-lg relative overflow-hidden group hover:border-white/15 transition-all">
+            <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-teal/10 rounded-full blur-2xl" />
+            <Globe size={18} className="text-teal mb-4" />
+            <p className="text-white/30 text-[10px] font-black uppercase tracking-widest mb-1.5 leading-none">Language</p>
+            <p className="text-white font-black text-[18px] tracking-tight truncate leading-none">{healer.languages[0]}</p>
           </div>
         </div>
 
         {/* Bio */}
-        <div className="mb-6">
-          <h3 className="text-[13px] font-bold text-white/50 uppercase tracking-widest mb-3">About</h3>
-          <p className="text-white/75 text-[15px] leading-[1.7] font-medium">{healer.bio}</p>
+        <div className="mb-10 lg:px-2">
+          <h3 className="text-[11px] font-black text-white/20 uppercase tracking-[0.3em] mb-4">Biography</h3>
+          <p className="text-white/70 text-[17px] leading-[1.7] font-medium tracking-tight whitespace-pre-line">{healer.bio}</p>
         </div>
 
         {/* Specialties */}
-        <div className="mb-6">
-          <h3 className="text-[13px] font-bold text-white/50 uppercase tracking-widest mb-3">Specialties</h3>
-          <div className="space-y-2">
+        <div className="mb-12">
+          <h3 className="text-[11px] font-black text-white/20 uppercase tracking-[0.3em] mb-6">Core Methodology</h3>
+          <div className="grid grid-cols-1 gap-3">
             {healer.specialties.map(s => (
-              <div key={s} className="flex items-center gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                <p className="text-white/75 text-[14px] font-medium">{s}</p>
+              <div key={s} className="flex items-center gap-4 bg-white/5 border border-white/10 p-4 rounded-2xl hover:bg-white/10 transition-colors">
+                <div className="w-2 h-2 rounded-full bg-primary-light shadow-glow-primary shrink-0" />
+                <p className="text-white font-bold text-[15px] tracking-tight">{s}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Session Types */}
-        <div className="mb-6">
-          <h3 className="text-[13px] font-bold text-white/50 uppercase tracking-widest mb-3">Choose a Session</h3>
-          <div className="space-y-2.5">
+        <div className="mb-12">
+          <h3 className="text-[11px] font-black text-white/20 uppercase tracking-[0.3em] mb-6">Engagement Plans</h3>
+          <div className="space-y-3.5">
             {healer.sessionTypes.map((s) => (
               <button
                 key={s.type}
                 onClick={() => setSelectedSession(s)}
-                className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all duration-200 text-left ${
+                className={`w-full flex items-center justify-between p-6 rounded-[28px] border transition-all duration-300 text-left relative overflow-hidden group ${
                   selectedSession?.type === s.type
-                    ? 'bg-primary/20 border-primary/40'
-                    : 'bg-surface2 border-white/6 hover:border-white/15'
+                    ? 'bg-primary/10 border-primary/40 shadow-xl'
+                    : 'bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10'
                 }`}
               >
+                {selectedSession?.type === s.type && (
+                   <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full -mr-12 -mt-12 blur-2xl" />
+                )}
+                
                 <div>
-                  <p className="text-white font-semibold text-[15px]">{s.type}</p>
-                  <p className="text-white/40 text-[12px] mt-0.5">{s.duration}</p>
+                  <p className="text-white font-black text-[18px] tracking-tight">{s.type}</p>
+                  <div className="flex items-center gap-2 mt-1.5">
+                     <Clock size={12} className="text-white/20" />
+                     <p className="text-white/40 text-[12px] font-bold">{s.duration}</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <p className="text-white font-bold text-[16px]">₹{s.price}</p>
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                    selectedSession?.type === s.type ? 'border-primary bg-primary' : 'border-white/20'
+                <div className="flex items-center gap-5">
+                  <p className="text-white font-black text-[22px] tracking-tighter">₹{s.price}</p>
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+                    selectedSession?.type === s.type ? 'border-primary bg-primary shadow-glow-primary scale-110' : 'border-white/10'
                   }`}>
                     {selectedSession?.type === s.type && (
-                      <div className="w-2 h-2 rounded-full bg-white" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-white" />
                     )}
                   </div>
                 </div>
@@ -171,32 +190,35 @@ export function HealerProfile() {
         </div>
 
         {/* Reviews */}
-        <div className="mb-8">
-          <h3 className="text-[13px] font-bold text-white/50 uppercase tracking-widest mb-3">Reviews</h3>
-          <div className="space-y-3">
+        <div className="mb-12">
+          <h3 className="text-[11px] font-black text-white/20 uppercase tracking-[0.3em] mb-6">Client Experiences</h3>
+          <div className="space-y-4">
             {(showAllReviews ? healer.reviews : healer.reviews.slice(0, 2)).map((r, i) => (
-              <div key={i} className="bg-surface2 border border-white/6 rounded-2xl p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 flex items-center justify-center text-[12px] font-bold text-white">
+              <div key={i} className="glass border border-white/5 rounded-[24px] p-6 relative overflow-hidden shadow-lg group">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12 blur-2xl group-hover:bg-white/10 transition-colors" />
+                <div className="flex items-start gap-4 mb-4 relative z-10">
+                  <div className="w-12 h-12 rounded-[14px] bg-primary/10 border border-primary/20 flex items-center justify-center text-[16px] font-black text-primary-light shadow-inner">
                     {r.name.charAt(0)}
                   </div>
                   <div>
-                    <p className="text-white font-semibold text-[13px]">{r.name}</p>
-                    <div className="flex gap-0.5 mt-0.5">
+                    <p className="text-white font-black text-[15px] tracking-tight">{r.name}</p>
+                    <div className="flex gap-1 mt-1 text-gold">
                       {Array.from({ length: r.rating }).map((_, j) => (
-                        <Star key={j} size={10} className="text-gold fill-gold" />
+                        <Star key={j} size={11} className="fill-gold" />
                       ))}
                     </div>
                   </div>
                 </div>
-                <p className="text-white/65 text-[13px] leading-relaxed">{r.text}</p>
+                <p className="text-white/60 text-[14px] leading-relaxed font-medium tracking-tight relative z-10 italic">"{r.text}"</p>
               </div>
             ))}
             {healer.reviews.length > 2 && (
-              <button onClick={() => setShowAllReviews(!showAllReviews)}
-                className="text-primary text-[13px] font-semibold flex items-center gap-1 hover:opacity-80 transition-opacity">
-                {showAllReviews ? 'Show less' : `See all ${healer.reviews.length} reviews`}
-                <ChevronDown size={14} className={`transition-transform ${showAllReviews ? 'rotate-180' : ''}`} />
+              <button 
+                onClick={() => setShowAllReviews(!showAllReviews)}
+                className="w-full h-12 flex items-center justify-center gap-2 text-[12px] font-black uppercase tracking-widest text-primary-light border border-primary/20 rounded-2xl bg-primary/5 hover:bg-primary/10 transition-all active:scale-[0.98]"
+              >
+                {showAllReviews ? 'Show Focus Reviews' : `Explore ${healer.reviews.length} Experiences`}
+                <ChevronDown size={14} className={`transition-transform duration-300 ${showAllReviews ? 'rotate-180' : ''}`} />
               </button>
             )}
           </div>
@@ -204,26 +226,30 @@ export function HealerProfile() {
       </div>
 
       {/* ── Sticky CTA ── */}
-      <div className="fixed bottom-0 left-0 right-0 p-5 ios-glass border-t border-white/5 z-30">
+      <div className="fixed bottom-0 left-0 right-0 p-6 glass-morphism border-t border-white/5 z-30">
         {booked ? (
-          <div className="bg-success/15 border border-success/25 rounded-2xl p-4 text-center">
-            <p className="text-success font-bold text-[16px]">✓ Session Requested!</p>
-            <p className="text-success/70 text-[12px] mt-1">{healer.name} will confirm shortly</p>
-          </div>
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-primary/20 border border-primary/30 rounded-[28px] p-5 text-center shadow-glow-primary backdrop-blur-3xl"
+          >
+            <p className="text-primary-light font-black text-[18px] tracking-tight">Booking Requested Successfully!</p>
+            <p className="text-white/40 text-[12px] font-bold mt-1.5 uppercase tracking-widest">{healer.name} will reach out shortly</p>
+          </motion.div>
         ) : (
           <button
             onClick={() => {
-              if (!selectedSession) { toast.error('Please select a session type first'); return; }
+              if (!selectedSession) { toast.error('Please select an engagement plan'); return; }
               setShowConfirm(true);
             }}
             disabled={booking}
-            className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-secondary text-white font-bold text-[16px] btn-glow hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full h-18 py-5 rounded-[28px] bg-primary text-white font-black text-[16px] uppercase tracking-[0.2em] shadow-glow-primary btn-glow transform active:scale-[0.98] transition-all disabled:opacity-40 flex items-center justify-center gap-3"
           >
             {booking ? (
-              <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <>
-                {selectedSession ? `Book ${selectedSession.type} · ₹${selectedSession.price}` : 'Select a Session to Book'}
+                {selectedSession ? `Book ${selectedSession.type} · ₹${selectedSession.price}` : 'Select a Plan to Begin'}
               </>
             )}
           </button>

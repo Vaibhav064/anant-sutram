@@ -10,6 +10,7 @@ const moodRoutes = require('./routes/mood');
 const journalRoutes = require('./routes/journal');
 const anxietyResetRoutes = require('./routes/anxietyReset');
 const healerRoutes = require('./routes/healers');
+const assessmentRoutes = require('./routes/assessments');
 
 const app = express();
 
@@ -104,6 +105,7 @@ async function start() {
   app.use('/api/journal', journalRoutes);
   app.use('/api/anxiety-reset', anxietyResetRoutes);
   app.use('/api/healers', healerRoutes);
+  app.use('/api/assessments', assessmentRoutes);
 
   // Global error handler
   app.use((err, req, res, next) => {

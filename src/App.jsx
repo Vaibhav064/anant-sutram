@@ -16,6 +16,8 @@ import { Profile } from './screens/Profile';
 import { Settings } from './screens/Settings';
 import { Meditate } from './screens/Meditate';
 import { AnxietyReset } from './screens/AnxietyReset';
+import { AssessmentList } from './screens/AssessmentList';
+import { MentalTestEngine } from './screens/MentalTestEngine';
 import { GlobalAudioPlayer } from './components/layout/GlobalAudioPlayer';
 import { ToastProvider } from './components/ui/Toast';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -30,10 +32,10 @@ const ProtectedRoute = ({ children }) => {
 
   if (isAuthLoading) {
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center" style={{ background: 'var(--bg-deep)' }}>
+      <div className="min-h-[100dvh] flex items-center justify-center" style={{ background: 'var(--bg-app)' }}>
         <div className="flex flex-col items-center gap-5">
           <div className="w-12 h-12 rounded-full border-2 border-[rgba(124,106,245,0.3)] border-t-[#7C6AF5] animate-spin" />
-          <p className="text-[13px] font-semibold tracking-[0.2em] text-[rgba(255,255,255,0.3)]">ANANT SUTRAM</p>
+          <p className="text-[13px] font-semibold tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>ANANT SUTRAM</p>
         </div>
       </div>
     );
@@ -102,6 +104,52 @@ function AppInner() {
 
   return (
     <ToastProvider>
+      {/* ── Fixed blurred pastel background ── */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'fixed', inset: 0, zIndex: -1,
+          background: '#EDE9FF',
+          overflow: 'hidden', pointerEvents: 'none',
+        }}
+      >
+        {/* Lavender — top-left */}
+        <div className="blob-drift-1" style={{
+          position: 'absolute', top: '-18%', left: '-12%',
+          width: '72%', height: '72%',
+          background: 'radial-gradient(circle at center, rgba(196,181,253,0.60) 0%, transparent 65%)',
+          filter: 'blur(52px)',
+        }} />
+        {/* Powder blue — top-right */}
+        <div className="blob-drift-2" style={{
+          position: 'absolute', top: '2%', right: '-12%',
+          width: '60%', height: '60%',
+          background: 'radial-gradient(circle at center, rgba(147,197,253,0.45) 0%, transparent 65%)',
+          filter: 'blur(52px)',
+        }} />
+        {/* Mint green — mid-left */}
+        <div className="blob-drift-3" style={{
+          position: 'absolute', top: '38%', left: '-8%',
+          width: '65%', height: '55%',
+          background: 'radial-gradient(circle at center, rgba(167,243,208,0.38) 0%, transparent 65%)',
+          filter: 'blur(52px)',
+        }} />
+        {/* Peach blush — bottom-right */}
+        <div className="blob-drift-4" style={{
+          position: 'absolute', bottom: '-12%', right: '8%',
+          width: '65%', height: '60%',
+          background: 'radial-gradient(circle at center, rgba(253,186,116,0.32) 0%, transparent 65%)',
+          filter: 'blur(52px)',
+        }} />
+        {/* Soft rose — center */}
+        <div className="blob-drift-2" style={{
+          position: 'absolute', top: '55%', left: '25%',
+          width: '50%', height: '45%',
+          background: 'radial-gradient(circle at center, rgba(251,207,232,0.28) 0%, transparent 65%)',
+          filter: 'blur(48px)',
+        }} />
+      </div>
+
       <div className="min-h-[100dvh] overflow-x-hidden relative">
         <Routes>
           {/* Public */}
@@ -122,6 +170,9 @@ function AppInner() {
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="/meditate" element={<ProtectedRoute><Meditate /></ProtectedRoute>} />
           <Route path="/anxiety-reset" element={<ProtectedRoute><AnxietyReset /></ProtectedRoute>} />
+          
+          <Route path="/assessments" element={<ProtectedRoute><AssessmentList /></ProtectedRoute>} />
+          <Route path="/assessment/:testId" element={<ProtectedRoute><MentalTestEngine /></ProtectedRoute>} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />

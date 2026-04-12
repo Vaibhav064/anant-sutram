@@ -9,70 +9,25 @@ import { PageSkeleton } from '../components/ui/Skeleton';
 
 import { API_BASE, apiFetch } from '../lib/api';
 
+import { HEALERS_DATA } from './Healers';
+
 // ─── Support Plans ─────────────────────────────────────────────────────────────
-const PLANS = [
-  {
-    id: 'anxiety_reset_psychologist',
-    key: 'psychologist',
-    icon: '🧠',
-    name: 'AI Psychologist',
-    tagline: 'Evidence-based emotional support',
-    price: 999,
-    color: 'from-violet-500/25 to-indigo-500/15',
-    border: 'border-violet-500/30',
-    accent: 'text-violet-300',
-    accentBg: 'bg-violet-500/15',
-    features: [
-      '21-day CBT-guided daily sessions',
-      'Emotional regulation techniques',
-      'Thought reframing exercises',
-      'Unlimited AI chat support',
-      'Mood pattern insights',
-    ],
-    style: 'Gentle, grounding, evidence-based',
-  },
-  {
-    id: 'anxiety_reset_spiritual',
-    key: 'spiritual',
-    icon: '🪷',
-    name: 'Spiritual Guide',
-    tagline: 'Inner peace & soulful healing',
-    price: 849,
-    color: 'from-amber-500/25 to-orange-500/15',
-    border: 'border-amber-500/30',
-    accent: 'text-amber-300',
-    accentBg: 'bg-amber-500/15',
-    features: [
-      '21-day spiritual wisdom journey',
-      'Daily mantras & affirmations',
-      'Breathwork & meditation guides',
-      'Vedantic & mindfulness wisdom',
-      'Soul-centered reflections',
-    ],
-    style: 'Peaceful, soulful, mindful',
-  },
-  {
-    id: 'anxiety_reset_coach',
-    key: 'coach',
-    icon: '🧭',
-    name: 'Life Coach',
-    tagline: 'Clarity, momentum & transformation',
-    price: 749,
-    color: 'from-teal/25 to-emerald-500/15',
-    border: 'border-teal/30',
-    accent: 'text-teal',
-    accentBg: 'bg-teal/15',
-    features: [
-      '21-day action-oriented program',
-      'Daily micro-goals & habits',
-      'Boundary & clarity exercises',
-      'Empowerment coaching style',
-      'Weekly momentum check-ins',
-    ],
-    style: 'Energizing, action-oriented',
-    popular: true,
-  },
-];
+const PLANS = HEALERS_DATA.map((h, i) => ({
+  id: `healer_${h.id}`,
+  key: `healer_${h.id}`,
+  icon: h.emoji,
+  photo: h.photo,
+  name: h.name,
+  tagline: h.tagline,
+  color: h.category === 'spiritual' ? 'bg-[rgba(213,200,240,0.3)]' : 'bg-[rgba(194,232,216,0.3)]',
+  border: h.category === 'spiritual' ? 'border-[rgba(213,200,240,0.5)]' : 'border-[rgba(194,232,216,0.5)]',
+  accent: h.category === 'spiritual' ? 'text-secondary' : 'text-teal',
+  accentBg: h.category === 'spiritual' ? 'bg-secondary/10' : 'bg-teal/10',
+  features: h.specialties,
+  style: h.experience,
+  popular: i === 1, // Make the second one popular
+  packages: h.sessionTypes,
+}));
 
 function DayThemeIcon(theme) {
   const map = {
@@ -86,65 +41,94 @@ function DayThemeIcon(theme) {
 }
 
 // ─── Plan Card Component ───────────────────────────────────────────────────────
-function PlanCard({ plan, isSelected, onSelect, isPurchased, onPurchase }) {
+function PlanCard({ plan, isSelected, onSelect, isPurchased, onPurchase, subscriptionTier }) {
+  const isUnlockedBySub = subscriptionTier === 'moksha' || (subscriptionTier === 'shakti' && plan.key === 'psychologist');
+  const effectivelyPurchased = isPurchased || isUnlockedBySub;
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`relative rounded-3xl border p-5 bg-gradient-to-br ${plan.color} ${plan.border} ${isPurchased ? 'ring-2 ring-offset-1 ring-offset-bg ring-teal/50' : ''} transition-all`}
+      className={`relative rounded-[24px] border p-5 ${effectivelyPurchased ? `bg-surface ${plan.border}` : 'bg-surface border-subtle'} shadow-sm transition-all overflow-hidden`}
     >
-      {plan.popular && !isPurchased && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-teal to-emerald-500 text-black text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full">
+      <div className={`absolute top-0 right-0 w-32 h-32 ${plan.color}  rounded-full blur-2xl -mr-16 -mt-16`} />
+      
+      {plan.popular && !effectivelyPurchased && (
+        <div className="absolute top-4 right-4 bg-teal/20 text-teal text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-[6px] shadow-sm">
           Most Popular
         </div>
       )}
-      {isPurchased && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-teal to-emerald-500 text-black text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full flex items-center gap-1">
-          <CheckCircle2 size={10} /> Active Plan
+      {effectivelyPurchased && (
+        <div className="absolute top-4 right-4 bg-success/10 border border-success/30 text-success text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-[6px] flex items-center gap-1 shadow-sm">
+          <CheckCircle2 size={10} /> Active
         </div>
       )}
 
-      <div className="flex items-start gap-3 mb-4">
-        <div className={`w-12 h-12 rounded-2xl ${plan.accentBg} flex items-center justify-center text-[24px] shrink-0`}>
-          {plan.icon}
+      <div className="flex items-start gap-3 mb-5 relative z-10">
+        <div className={`w-14 h-14 rounded-[18px] ${plan.accentBg} flex items-center justify-center text-[28px] shrink-0 shadow-sm border border-soft overflow-hidden relative`}>
+          <img
+            src={plan.photo}
+            alt={plan.name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
+          />
+          <div className="hidden w-full h-full items-center justify-center">{plan.icon}</div>
         </div>
-        <div className="flex-1">
-          <h3 className="text-white font-bold text-[17px] tracking-tight">{plan.name}</h3>
-          <p className={`text-[12px] font-medium ${plan.accent} mt-0.5`}>{plan.tagline}</p>
-        </div>
-        <div className="text-right">
-          <p className="text-white font-bold text-[20px]">₹{plan.price}</p>
-          <p className="text-white/30 text-[11px]">one-time</p>
+        <div className="flex-1 mt-0.5">
+          <h3 className={`font-bold text-[18px] tracking-tight ${plan.accent}`}>{plan.name}</h3>
+          <p className={`text-[12px] font-medium text-sub mt-0.5 leading-snug pr-8`}>{plan.tagline}</p>
         </div>
       </div>
 
-      <ul className="space-y-2 mb-5">
+      <div className="mb-4">
+         {effectivelyPurchased ? (
+           <div className="flex items-center gap-2">
+             <Star size={16} className="text-gold fill-gold" />
+             <p className="text-[12px] font-bold text-gold uppercase tracking-wider">Unlocked via Pro</p>
+           </div>
+         ) : null}
+      </div>
+
+      <ul className="space-y-2 mb-6">
         {plan.features.map(f => (
-          <li key={f} className="flex items-start gap-2 text-[13px] text-white/75 font-medium">
+          <li key={f} className="flex items-start gap-2 text-[13px] text-sub font-medium leading-snug">
             <CheckCircle2 size={14} className={`${plan.accent} mt-0.5 shrink-0`} />
             {f}
           </li>
         ))}
       </ul>
 
-      <div className={`text-[11px] font-semibold ${plan.accent} ${plan.accentBg} px-3 py-2 rounded-xl mb-4 text-center border ${plan.border}`}>
-        Style: {plan.style}
+      <div className={`text-[11px] font-bold ${plan.accent} ${plan.accentBg} px-3 py-2.5 rounded-xl mb-5 text-center border ${plan.border}`}>
+        Experience: {plan.style}
       </div>
 
-      {isPurchased ? (
-        <button
-          onClick={() => onSelect(plan.key)}
-          className={`w-full py-3.5 rounded-2xl border ${plan.border} text-white font-bold text-[14px] ${isSelected ? plan.accentBg : 'bg-white/5'} transition-all`}
-        >
-          {isSelected ? '✓ Currently Active' : 'Switch to this plan'}
-        </button>
+      {effectivelyPurchased ? (
+         <button
+           onClick={() => onSelect(plan.key)}
+           className={`w-full py-4 rounded-xl text-[14px] font-bold transition-all shadow-sm ${isSelected ? `${plan.accentBg} ${plan.accent} border ${plan.border}` : 'bg-surface2 border border-subtle text-muted'}`}
+         >
+           {isSelected ? '✓ Currently Active' : 'Switch to this plan'}
+         </button>
       ) : (
-        <button
-          onClick={() => onPurchase(plan)}
-          className="w-full py-3.5 rounded-2xl bg-white text-bg font-bold text-[14px] hover:opacity-90 transition-all active:scale-95"
-        >
-          Unlock for ₹{plan.price}
-        </button>
+        <div className="space-y-2">
+          <p className="text-muted text-[10px] uppercase font-bold tracking-widest mb-2 border-b border-soft pb-1">Available Packages</p>
+          {plan.packages?.map((pkg, idx) => (
+            <button
+              key={idx}
+              onClick={() => onPurchase({ ...plan, price: pkg.price, name: `${plan.name} - ${pkg.type}` })}
+              className={`w-full py-3 px-4 rounded-xl ${plan.accentBg} border ${plan.border} ${plan.accent} font-bold text-[13px] hover:scale-[0.98] transition-transform shadow-sm flex justify-between items-center`}
+            >
+              <div className="flex flex-col items-start gap-0.5">
+                <span>{pkg.type}</span>
+                <span className={`text-[10px] font-medium opacity-80`}>{pkg.duration}</span>
+              </div>
+              <span className="text-[15px] font-black">₹{pkg.price}</span>
+            </button>
+          ))}
+        </div>
       )}
     </motion.div>
   );
@@ -156,28 +140,28 @@ function DayCard({ day, isUnlocked, isCompleted, isCurrent, onClick }) {
     <motion.button
       onClick={onClick}
       disabled={!isUnlocked}
-      className={`relative flex flex-col items-center p-4 rounded-2xl border transition-all duration-200 text-center
-        ${isCompleted ? 'bg-primary/15 border-primary/30' :
-          isCurrent ? 'bg-gradient-to-br from-primary/20 to-secondary/10 border-primary/40 shadow-glow-primary' :
-          isUnlocked ? 'bg-surface2 border-white/8 hover:border-white/18' :
-          'bg-surface2/50 border-white/4 opacity-40'}`}
+      className={`relative flex flex-col items-center p-4 rounded-2xl transition-all duration-200 text-center border shadow-sm
+        ${isCompleted ? 'bg-surface border-success/40' :
+          isCurrent ? 'bg-surface border-gold/50 shadow-md scale-105 z-10' :
+          isUnlocked ? 'bg-surface border-subtle hover:border-soft' :
+          'bg-surface2 border-subtle opacity-60'}`}
     >
       {isCompleted && (
-        <div className="absolute -top-2 -right-2">
-          <CheckCircle2 size={18} className="text-primary fill-primary/20" />
+        <div className="absolute -top-1.5 -right-1.5">
+          <CheckCircle2 size={16} className="text-success bg-surface rounded-full" />
         </div>
       )}
       {!isUnlocked && !isCompleted && (
-        <div className="absolute top-2 right-2">
-          <Lock size={12} className="text-white/20" />
+        <div className="absolute top-2.5 right-2.5">
+          <Lock size={12} className="text-muted" />
         </div>
       )}
 
-      <span className="text-[22px] mb-1.5">{DayThemeIcon(day.theme)}</span>
-      <span className={`text-[10px] font-black uppercase tracking-widest mb-1 ${isCurrent ? 'text-primary-light' : isCompleted ? 'text-primary' : 'text-white/30'}`}>
+      <span className={`text-[24px] mb-2 ${!isUnlocked && !isCompleted ? 'grayscale opacity-60' : ''}`}>{DayThemeIcon(day.theme)}</span>
+      <span className={`text-[9px] font-bold uppercase tracking-widest mb-0.5 ${isCurrent ? 'text-gold' : isCompleted ? 'text-success' : 'text-muted'}`}>
         Day {day.day}
       </span>
-      <span className="text-white text-[11px] font-semibold leading-tight">{day.theme}</span>
+      <span className="text-main text-[11px] font-bold leading-tight">{day.theme}</span>
     </motion.button>
   );
 }
@@ -187,7 +171,7 @@ export function AnxietyReset() {
   const navigate = useNavigate();
   const toast = useToast();
   const user = useStore(s => s.user);
-  const getAuthHeader = useStore(s => s.getAuthHeader);
+  const subscriptionTier = useStore(s => s.subscriptionTier);
 
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(null);
@@ -273,7 +257,6 @@ export function AnxietyReset() {
         method: 'POST',
         body: JSON.stringify({ planId: purchasingPlan.id, planName: purchasingPlan.name, amount: purchasingPlan.price }),
       });
-      const data = await res.json();
 
       // Refresh progress
       await fetchProgress();
@@ -296,11 +279,7 @@ export function AnxietyReset() {
 
   const isDayUnlocked = (dayNum) => {
     if (!progress) return false;
-    // Completed days are always viewable (review mode)
     if (isDayCompleted(dayNum)) return true;
-    // The current active day: only accessible if the server hasn't locked it.
-    // isNextDayLocked = true means today's day was completed today;
-    // the next day (currentDay) should stay locked until tomorrow.
     if (dayNum === currentDay && !isNextDayLocked) return true;
     return false;
   };
@@ -310,34 +289,37 @@ export function AnxietyReset() {
   // ── Intro / Start Screen ──────────────────────────────────────────────────────
   if (!progress) {
     return (
-      <div className="min-h-screen bg-bg flex flex-col pb-nav">
-        <div className="px-5 pt-safe pt-12 pb-6 flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center">
-            <ArrowLeft size={18} className="text-white" />
+      <div className="min-h-[100dvh] flex flex-col pb-nav" style={{ background: 'var(--bg-app)' }}>
+        <div className="px-6 pt-12 pb-4 flex items-center justify-between">
+          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-xl bg-surface border border-subtle flex items-center justify-center text-muted hover:bg-surface2 transition-colors shadow-sm active:scale-95">
+            <ArrowLeft size={20} />
           </button>
+          <div className="w-10 h-10" />
         </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex-1 flex flex-col px-5"
+          className="flex-1 flex flex-col px-6 pb-8"
         >
           {/* Hero */}
-          <div className="relative rounded-3xl overflow-hidden mb-8 p-8"
-            style={{ background: 'linear-gradient(135deg, rgba(124,106,245,0.2) 0%, rgba(192,132,252,0.15) 100%)', border: '1px solid rgba(124,106,245,0.25)' }}>
-            <div className="absolute -right-8 -bottom-8 text-[120px] opacity-15">🌿</div>
-            <span className="text-[11px] font-black text-primary-light uppercase tracking-[0.2em] mb-3 block">21-Day Program</span>
-            <h1 className="text-[32px] font-bold text-white tracking-tight leading-tight mb-3">
+          <div className="relative rounded-[32px] overflow-hidden mb-8 p-8 bg-surface border border-teal/20 shadow-sm">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-teal/20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+            <div className="absolute -right-6 -bottom-6 text-[100px] opacity-10">🌿</div>
+            
+            <span className="text-[10px] font-bold text-teal bg-teal/10 inline-block px-2.5 py-1 rounded-[6px] uppercase tracking-widest mb-4">21-Day Program</span>
+            
+            <h1 className="text-[32px] font-bold text-main tracking-tight leading-none mb-4">
               Anxiety Reset<br/>Journey
             </h1>
-            <p className="text-white/60 text-[15px] leading-relaxed font-medium">
+            <p className="text-sub text-[15px] leading-relaxed font-medium relative z-10">
               A structured 21-day program combining mindfulness, CBT techniques, and daily reflection to transform your relationship with anxiety.
             </p>
           </div>
 
           {/* What you'll get */}
-          <div className="mb-8">
-            <h2 className="text-[15px] font-bold text-white/50 uppercase tracking-widest mb-4">What's included</h2>
+          <div className="mb-10 bg-surface rounded-[28px] p-6 border border-subtle shadow-sm">
+            <h2 className="text-[11px] font-bold text-muted uppercase tracking-widest mb-5">What's included</h2>
             {[
               { icon: '📅', text: '21 structured daily sessions' },
               { icon: '🧘', text: 'Guided exercises & meditations' },
@@ -346,24 +328,25 @@ export function AnxietyReset() {
               { icon: '📊', text: 'Progress tracking & streaks' },
               { icon: '🔒', text: 'Day-by-day content unlocking' },
             ].map(({ icon, text }) => (
-              <div key={text} className="flex items-center gap-3 mb-3">
-                <span className="text-[20px]">{icon}</span>
-                <p className="text-white/75 text-[15px] font-medium">{text}</p>
+              <div key={text} className="flex items-center gap-4 mb-4 last:mb-0">
+                <span className="w-10 h-10 bg-surface2 rounded-[12px] flex items-center justify-center text-[18px] shrink-0 border border-subtle">{icon}</span>
+                <p className="text-main text-[14px] font-bold">{text}</p>
               </div>
             ))}
           </div>
 
           {/* Support plans preview */}
-          <div className="bg-surface2 border border-white/6 rounded-2xl p-5 mb-8">
-            <p className="text-[11px] font-black text-gold uppercase tracking-widest mb-3">✦ Optional Premium Support</p>
-            <p className="text-white/70 text-[14px] leading-relaxed mb-4">
+          <div className="bg-surface border border-subtle rounded-[28px] p-6 mb-8 shadow-sm relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-gold/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none" />
+            <p className="text-[10px] font-bold text-gold bg-gold/10 inline-block px-2 py-0.5 rounded-[4px] uppercase tracking-widest mb-3">✦ Optional Premium Support</p>
+            <p className="text-sub text-[14px] font-medium leading-relaxed mb-5">
               Enhance your journey with a dedicated guide — AI Psychologist, Spiritual Guide, or Life Coach.
             </p>
-            <div className="flex gap-2.5">
+            <div className="flex gap-2">
               {PLANS.map(p => (
-                <div key={p.id} className={`flex-1 p-3 rounded-2xl bg-gradient-to-br ${p.color} ${p.border} border text-center`}>
-                  <span className="text-[22px] block mb-1">{p.icon}</span>
-                  <span className={`text-[10px] font-bold ${p.accent}`}>{p.name.split(' ')[0]}</span>
+                <div key={p.id} className={`flex-1 pt-3 pb-2.5 rounded-2xl ${p.color} border ${p.border} border-opacity-30 text-center`}>
+                  <span className="text-[20px] block mb-0.5">{p.icon}</span>
+                  <span className={`text-[9px] font-bold ${p.accent}`}>{p.name.split(' ')[0]}</span>
                 </div>
               ))}
             </div>
@@ -371,11 +354,11 @@ export function AnxietyReset() {
 
           <button
             onClick={handleStart}
-            className="w-full py-5 rounded-2xl bg-gradient-to-r from-primary to-secondary text-white font-bold text-[17px] btn-glow hover:opacity-90 transition-all active:scale-95 mb-4"
+            className="w-full py-5 rounded-[20px] bg-primary text-white font-bold text-[16px] shadow-glow-primary hover:opacity-90 transition-all active:scale-95 mb-4"
           >
             Begin My Journey 🌿
           </button>
-          <button onClick={() => navigate(-1)} className="text-white/30 text-[14px] text-center py-2">Not now</button>
+          <button onClick={() => navigate(-1)} className="text-muted font-bold text-[13px] uppercase tracking-widest text-center py-2 w-full hover:text-sub transition-colors">Not now</button>
         </motion.div>
       </div>
     );
@@ -387,46 +370,46 @@ export function AnxietyReset() {
   const progressPct = Math.round((completedDays / 21) * 100);
 
   return (
-    <div className="min-h-screen bg-bg pb-nav">
+    <div className="min-h-[100dvh] pb-nav flex flex-col" style={{ background: 'var(--bg-app)' }}>
       {/* ── Header ── */}
-      <div className="px-5 pt-12 pb-4 sticky top-0 ios-glass border-b border-white/5 z-20">
-        <div className="flex items-center justify-between mb-4">
-          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center">
-            <ArrowLeft size={18} className="text-white" />
+      <div className="px-6 pt-12 pb-4 sticky top-0 backdrop-blur-xl z-20" style={{ background: 'rgba(232,238,247,0.92)' }}>
+        <div className="flex items-center justify-between mb-5">
+          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-xl bg-surface border border-subtle flex items-center justify-center text-muted shadow-sm transition-transform active:scale-95">
+            <ArrowLeft size={20} />
           </button>
           <div className="text-center">
-            <h1 className="text-[17px] font-bold text-white tracking-tight">Anxiety Reset</h1>
-            <p className="text-[11px] text-white/40">Day {currentDay} of 21</p>
+            <h1 className="text-[17px] font-bold text-main tracking-tight">Anxiety Reset</h1>
+            <p className="text-[11px] text-muted font-bold uppercase tracking-widest">Day {currentDay} of 21</p>
           </div>
-          <div className="flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 rounded-full">
-            <Flame size={12} className="text-amber-400" />
-            <span className="text-[11px] text-amber-300 font-bold">{progress.streakCount}</span>
+          <div className="flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-[10px] shadow-sm">
+            <Flame size={12} className="text-amber-500" />
+            <span className="text-[11px] text-amber-600 font-bold">{progress.streakCount}</span>
           </div>
         </div>
 
         {/* Progress bar */}
-        <div>
-          <div className="flex justify-between text-[11px] text-white/30 mb-1.5">
-            <span>Progress</span>
-            <span>{completedDays}/21 days · {progressPct}%</span>
+        <div className="bg-surface p-3 rounded-2xl shadow-sm border border-subtle">
+          <div className="flex justify-between items-center text-[10px] font-bold text-muted uppercase tracking-widest mb-2 px-1">
+            <span>Overall Progress</span>
+            <span className="text-main">{completedDays}/21 days · {progressPct}%</span>
           </div>
-          <div className="h-1.5 bg-white/6 rounded-full overflow-hidden">
+          <div className="h-2 bg-surface2 rounded-full overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progressPct}%` }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
-              className="h-full rounded-full bg-gradient-to-r from-primary to-secondary"
+              className="h-full rounded-full bg-teal"
             />
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mt-4 bg-surface2 p-1 rounded-2xl">
-          {[{ id: 'today', label: "Today's Day" }, { id: 'journey', label: '21 Days' }, { id: 'plans', label: 'Support Plans' }].map(tab => (
+        <div className="flex gap-2 mt-4 bg-surface2 p-1 rounded-[16px] border border-subtle">
+          {[{ id: 'today', label: "Today" }, { id: 'journey', label: 'Journey' }, { id: 'plans', label: 'Guides' }].map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-2 rounded-xl text-[12px] font-bold transition-all ${activeTab === tab.id ? 'bg-primary text-white' : 'text-white/40'}`}
+              className={`flex-1 py-2 rounded-xl text-[12px] font-bold transition-all ${activeTab === tab.id ? 'bg-surface text-main shadow-sm' : 'text-sub hover:bg-surface/50'}`}
             >
               {tab.label}
             </button>
@@ -437,22 +420,24 @@ export function AnxietyReset() {
       <AnimatePresence mode="wait">
         {/* ── TODAY TAB ── */}
         {activeTab === 'today' && todayContent && (
-          <motion.div key="today" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="px-5 pt-6 pb-8">
+          <motion.div key="today" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="px-6 pt-4 pb-8">
             {isDayCompleted(currentDay) || (isNextDayLocked && currentDay > 1) ? (
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
                 className="text-center py-12">
-                <div className="text-[64px] mb-4">{isNextDayLocked ? '⏳' : '🌟'}</div>
-                <h2 className="text-[24px] font-bold text-white mb-2">{isNextDayLocked ? 'Coming Tomorrow' : `Day ${currentDay} Complete!`}</h2>
-                <p className="text-white/50 text-[15px] mb-8">
+                <div className="w-24 h-24 bg-surface border border-teal/30 text-[48px] rounded-[32px] flex items-center justify-center mx-auto mb-6 shadow-sm">
+                  {isNextDayLocked ? '⏳' : '🌟'}
+                </div>
+                <h2 className="text-[26px] font-bold text-main tracking-tight leading-tight mb-2">{isNextDayLocked ? 'Coming Tomorrow' : `Day ${currentDay} Complete!`}</h2>
+                <p className="text-sub text-[15px] font-medium mb-8">
                   {isNextDayLocked 
                     ? `You've done great today. Day ${currentDay} will unlock at midnight.` 
                     : "You're building something real. Come back tomorrow."}
                 </p>
                 {currentDay < 21 && (
-                  <div className="bg-surface2 border border-white/6 rounded-2xl p-5 text-left">
-                    <p className="text-white/40 text-[11px] uppercase tracking-wider font-bold mb-2">Next Journey Step — Day {currentDay}</p>
-                    <p className="text-white font-bold text-[17px]">{todayContent.title}</p>
-                    <p className="text-white/50 text-[13px] mt-1">{todayContent.theme}</p>
+                  <div className="bg-surface border border-subtle rounded-[28px] p-6 text-left shadow-sm">
+                    <p className="text-teal bg-teal/10 inline-block px-2 py-0.5 rounded-[6px] text-[10px] uppercase tracking-widest font-bold mb-3 border border-teal/20">Next Step: Day {currentDay}</p>
+                    <p className="text-main font-bold text-[18px] mb-1">{todayContent.title}</p>
+                    <p className="text-sub font-medium text-[13px]">{todayContent.theme}</p>
                   </div>
                 )}
               </motion.div>
@@ -460,79 +445,74 @@ export function AnxietyReset() {
               <>
                 {/* Plan badge */}
                 {activePlan && (
-                  <div className={`flex items-center gap-2 ${activePlan.accentBg} border ${activePlan.border} rounded-xl px-4 py-2.5 mb-5`}>
-                    <span className="text-[18px]">{activePlan.icon}</span>
-                    <p className={`text-[12px] font-bold ${activePlan.accent}`}>{activePlan.name} track active</p>
+                  <div className={`flex items-center gap-3 bg-surface ${activePlan.border} border rounded-[20px] px-4 py-3 mb-6 shadow-sm`}>
+                    <span className={`w-8 h-8 rounded-[10px] ${activePlan.accentBg} flex items-center justify-center text-[16px]`}>{activePlan.icon}</span>
+                    <p className={`text-[13px] font-bold text-main`}>{activePlan.name} track active</p>
                   </div>
                 )}
 
                 {/* Day header */}
                 <div className="mb-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[11px] font-black text-primary-light uppercase tracking-widest bg-primary/15 border border-primary/25 px-2.5 py-0.5 rounded-full">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-[10px] font-bold text-teal bg-teal/10 border border-teal/20 uppercase tracking-widest px-3 py-1 rounded-[8px]">
                       Day {todayContent.day} · {todayContent.theme}
                     </span>
                   </div>
-                  <h2 className="text-[26px] font-bold text-white tracking-tight mb-2">{todayContent.title}</h2>
-                  <p className="text-white/55 text-[15px] leading-relaxed">{todayContent.desc}</p>
+                  <h2 className="text-[28px] font-bold text-main tracking-tight leading-tight mb-3">{todayContent.title}</h2>
+                  <p className="text-sub text-[15px] leading-relaxed font-medium">{todayContent.desc}</p>
                 </div>
 
                 {/* Exercise */}
-                <div className={`rounded-2xl border p-5 mb-4 transition-all ${exerciseDone ? 'bg-primary/15 border-primary/30' : 'bg-surface2 border-white/6'}`}>
+                <div className={`rounded-[24px] border p-5 mb-4 transition-all shadow-sm ${exerciseDone ? 'bg-surface border-teal/40' : 'bg-surface border-subtle'}`}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
-                      <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Guided Exercise</p>
-                      <h3 className="text-white font-bold text-[16px] mb-1">{todayContent.exercise}</h3>
-                      <p className="text-white/50 text-[13px]">Complete this to mark the exercise done</p>
+                      <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2">Guided Exercise</p>
+                      <h3 className="text-main font-bold text-[16px] mb-1 leading-snug">{todayContent.exercise}</h3>
+                      <p className="text-sub font-medium text-[13px]">Complete this to mark the exercise done</p>
                     </div>
                     <button
                       onClick={() => setExerciseDone(!exerciseDone)}
-                      className={`w-9 h-9 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${exerciseDone ? 'bg-primary border-primary' : 'border-white/20 hover:border-primary/50'}`}
+                      className={`w-10 h-10 rounded-[14px] border flex items-center justify-center shrink-0 transition-all ${exerciseDone ? 'bg-teal border-teal' : 'bg-surface2 border-soft active:scale-95'}`}
                     >
-                      {exerciseDone && <CheckCircle2 size={16} className="text-white fill-white" />}
+                      {exerciseDone && <CheckCircle2 size={18} className="text-white" />}
                     </button>
                   </div>
                   {!exerciseDone && (
                     <button
                       onClick={() => navigate('/meditate')}
-                      className="mt-4 flex items-center gap-2 text-primary text-[13px] font-semibold"
+                      className="mt-5 flex items-center gap-2 text-teal bg-teal/10 border border-teal/20 px-4 py-2.5 rounded-[12px] text-[13px] font-bold w-fit active:scale-95 transition-transform"
                     >
-                      <Play size={14} /> Open meditation player
+                      <Play size={14} className="fill-teal" /> Open player
                     </button>
                   )}
                 </div>
 
                 {/* Reflection */}
-                <div className="bg-surface2 border border-white/8 rounded-2xl p-5 mb-4">
-                  <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-3">Daily Reflection</p>
-                  <p className="text-white font-semibold text-[15px] leading-snug mb-4">"{todayContent.reflection}"</p>
+                <div className="bg-surface border border-subtle rounded-[28px] p-6 mb-4 shadow-sm">
+                  <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-3 border-b border-soft pb-2">Daily Reflection</p>
+                  <p className="text-main font-bold text-[16px] leading-relaxed italic mb-4">"{todayContent.reflection}"</p>
                   <textarea
                     value={journalResponse}
                     onChange={(e) => setJournalResponse(e.target.value)}
                     placeholder="Write your thoughts here..."
-                    className="w-full rounded-xl px-4 py-3 text-[14px] placeholder:text-white/30 focus:outline-none focus:border-primary/40 transition-colors resize-none mb-1"
-                    style={{
-                      background: 'rgba(10, 10, 20, 0.85)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      color: '#e8e8f0',
-                    }}
+                    className="w-full rounded-[16px] px-4 py-4 text-[14px] font-medium bg-surface2 border border-soft focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none mb-2 placeholder:text-muted text-main"
                     rows={4}
                   />
-                  <p className="text-[10px] text-white/20 font-medium italic">* Your reflection is private and saved to your journey.</p>
+                  <p className="text-[10px] text-muted font-bold uppercase tracking-widest text-right">Private & Secured</p>
                 </div>
 
                 {/* Task */}
-                <div className={`rounded-2xl border p-5 mb-6 transition-all ${taskDone ? 'bg-success/10 border-success/25' : 'bg-surface2 border-white/6'}`}>
-                  <div className="flex items-start justify-between gap-3">
+                <div className={`rounded-[24px] border p-5 mb-8 transition-all shadow-sm ${taskDone ? 'bg-success/10 border-success/30' : 'bg-surface border-subtle'}`}>
+                  <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Today's Task</p>
-                      <p className="text-white font-medium text-[14px] leading-relaxed">{todayContent.task}</p>
+                      <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2">Today's Micro-Task</p>
+                      <p className="text-main font-bold text-[15px] leading-relaxed">{todayContent.task}</p>
                     </div>
                     <button
                       onClick={() => setTaskDone(!taskDone)}
-                      className={`w-9 h-9 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${taskDone ? 'bg-success border-success' : 'border-white/20 hover:border-success/50'}`}
+                      className={`w-10 h-10 rounded-[14px] border flex items-center justify-center shrink-0 transition-all ${taskDone ? 'bg-success border-success' : 'bg-surface2 border-soft active:scale-95'}`}
                     >
-                      {taskDone && <CheckCircle2 size={16} className="text-white" />}
+                      {taskDone && <CheckCircle2 size={18} className="text-white" />}
                     </button>
                   </div>
                 </div>
@@ -541,7 +521,7 @@ export function AnxietyReset() {
                 <button
                   onClick={() => handleCompleteDay(currentDay)}
                   disabled={completing}
-                  className="w-full h-[58px] rounded-2xl bg-gradient-to-r from-primary to-secondary text-white font-bold text-[16px] shadow-glow-primary hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2 mb-4"
+                  className="w-full h-14 rounded-2xl bg-primary text-white font-bold text-[15px] uppercase tracking-widest shadow-md hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center justify-center gap-2 mb-4 active:scale-95"
                 >
                   {completing ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : (
                     <>Complete Day {currentDay} <Sparkles size={16} /></>
@@ -554,10 +534,10 @@ export function AnxietyReset() {
 
         {/* ── JOURNEY TAB ── */}
         {activeTab === 'journey' && (
-          <motion.div key="journey" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="px-5 pt-6 pb-8">
-            <p className="text-white/40 text-[13px] font-medium mb-5">Tap a day to see its content. Locked days unlock as you progress.</p>
+          <motion.div key="journey" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} className="px-6 pt-4 pb-8">
+            <p className="text-sub text-[13px] font-medium mb-6">Tap a day to view its content. Locked days unlock sequentially.</p>
 
-            <div className="grid grid-cols-4 gap-2.5">
+            <div className="grid grid-cols-4 gap-3">
               {programDays.map(day => (
                 <DayCard
                   key={day.day}
@@ -579,11 +559,11 @@ export function AnxietyReset() {
 
         {/* ── PLANS TAB ── */}
         {activeTab === 'plans' && (
-          <motion.div key="plans" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="px-5 pt-6 pb-8">
-            <div className="mb-6">
-              <h2 className="text-[22px] font-bold text-white tracking-tight mb-2">Choose Your Guide</h2>
-              <p className="text-white/50 text-[14px] leading-relaxed">
-                Personalize your 21-day experience with expert daily support. Each plan tailors your reflections, guidance style, and daily insights.
+          <motion.div key="plans" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="px-5 pt-4 pb-8">
+            <div className="mb-6 px-1">
+              <h2 className="text-[24px] font-bold text-main tracking-tight leading-tight mb-2">Choose Your Guide</h2>
+              <p className="text-sub text-[14px] leading-relaxed font-medium">
+                Personalize your 21-day experience with expert daily support. Each plan tailors reflections and insights.
               </p>
             </div>
 
@@ -594,6 +574,7 @@ export function AnxietyReset() {
                   plan={plan}
                   isSelected={selectedPlan === plan.key}
                   isPurchased={progress?.planPurchased && selectedPlan === plan.key}
+                  subscriptionTier={subscriptionTier}
                   onSelect={(key) => {/* switch plan */}}
                   onPurchase={(p) => {
                     setPurchasingPlan(p);
@@ -603,9 +584,15 @@ export function AnxietyReset() {
               ))}
             </div>
 
-            {!progress?.planPurchased && (
-              <div className="mt-4 p-4 bg-white/3 border border-white/5 rounded-2xl text-center">
-                <p className="text-white/30 text-[12px] font-medium">The free program runs without a plan. Plans add personalized daily guidance.</p>
+            {!progress?.planPurchased && subscriptionTier === 'aura' && (
+              <div className="mt-6 p-4 bg-surface border border-subtle rounded-2xl text-center shadow-sm">
+                <p className="text-muted text-[11px] font-bold uppercase tracking-widest">The free program runs without a plan. Plans add personalized daily guidance.</p>
+              </div>
+            )}
+            {(subscriptionTier === 'shakti' || subscriptionTier === 'moksha') && (
+              <div className="mt-6 p-4 bg-gold/10 border border-gold/30 rounded-2xl text-center shadow-sm">
+                <p className="text-gold text-[11px] font-bold uppercase tracking-widest flex items-center justify-center gap-1">
+                  <Star size={12} className="fill-gold" /> Pro Packages Unlocked</p>
               </div>
             )}
           </motion.div>
@@ -617,41 +604,41 @@ export function AnxietyReset() {
         {dayView && selectedDay && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setDayView(false)} className="fixed inset-0 bg-black/60 z-50" />
+              onClick={() => setDayView(false)} className="fixed inset-0 bg-black/40 z-50 backdrop-blur-sm" />
             <motion.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed inset-x-0 bottom-0 h-[70dvh] bg-surface2 border-t border-white/8 rounded-t-3xl z-[51] overflow-hidden flex flex-col"
+              className="fixed inset-x-0 bottom-0 h-[75dvh] bg-surface border-t border-subtle rounded-t-[36px] z-[51] overflow-hidden flex flex-col shadow-2xl"
             >
-              <div className="flex justify-between items-center p-5 border-b border-white/5">
+              <div className="flex justify-between items-center p-6 border-b border-soft bg-surface">
                 <div>
-                  <p className="text-white/40 text-[11px] font-bold uppercase tracking-wider">Day {selectedDay.day} · {selectedDay.theme}</p>
-                  <h3 className="text-white font-bold text-[18px] mt-0.5">{selectedDay.title}</h3>
+                  <p className="text-muted text-[10px] font-bold uppercase tracking-widest">Day {selectedDay.day} · {selectedDay.theme}</p>
+                  <h3 className="text-main font-bold text-[20px] tracking-tight leading-tight mt-0.5">{selectedDay.title}</h3>
                 </div>
-                <button onClick={() => setDayView(false)} className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center">
-                  <X size={16} className="text-white/50" />
+                <button onClick={() => setDayView(false)} className="w-10 h-10 rounded-[14px] bg-surface2 flex items-center justify-center border border-soft active:scale-95 transition-transform">
+                  <X size={18} className="text-sub" />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto p-5 space-y-5">
-                <p className="text-white/65 text-[15px] leading-relaxed">{selectedDay.desc}</p>
-                <div className="bg-primary/10 border border-primary/20 rounded-xl p-4">
-                  <p className="text-[10px] font-black text-primary-light uppercase tracking-widest mb-2">Exercise</p>
-                  <p className="text-white font-semibold text-[15px]">{selectedDay.exercise}</p>
+              <div className="flex-1 overflow-y-auto px-6 py-8 space-y-6 bg-bg">
+                <p className="text-main text-[15px] leading-relaxed font-bold bg-surface p-5 rounded-[24px] shadow-sm border border-subtle">{selectedDay.desc}</p>
+                <div className="bg-surface border border-teal/30 rounded-[24px] p-5 shadow-sm">
+                  <p className="text-[10px] font-bold text-teal uppercase tracking-widest mb-2 border-b border-soft pb-2">Exercise</p>
+                  <p className="text-main font-bold text-[16px] leading-snug">{selectedDay.exercise}</p>
                 </div>
-                <div className="bg-secondary/10 border border-secondary/20 rounded-xl p-4">
-                  <p className="text-[10px] font-black text-secondary uppercase tracking-widest mb-2">Reflection</p>
-                  <p className="text-white/80 text-[14px] italic leading-relaxed">"{selectedDay.reflection}"</p>
+                <div className="bg-surface border border-secondary/30 rounded-[24px] p-5 shadow-sm">
+                  <p className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-2 border-b border-soft pb-2">Reflection</p>
+                  <p className="text-main text-[15px] italic leading-relaxed font-bold">"{selectedDay.reflection}"</p>
                 </div>
-                <div className="bg-teal/10 border border-teal/20 rounded-xl p-4">
-                  <p className="text-[10px] font-black text-teal uppercase tracking-widest mb-2">Task</p>
-                  <p className="text-white/80 text-[14px] leading-relaxed">{selectedDay.task}</p>
+                <div className="bg-surface border border-gold/30 rounded-[24px] p-5 shadow-sm">
+                  <p className="text-[10px] font-bold text-gold uppercase tracking-widest mb-2 border-b border-soft pb-2">Task</p>
+                  <p className="text-main text-[15px] leading-relaxed font-bold">{selectedDay.task}</p>
                 </div>
                 {selectedDay.day === currentDay && !isDayCompleted(selectedDay.day) && (
                   <button onClick={() => { setDayView(false); setActiveTab('today'); }}
-                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-secondary text-white font-bold text-[15px] btn-glow">
-                    Start Today's Work →
+                    className="w-full py-4 rounded-2xl bg-primary/10 border border-primary/20 text-primary font-bold text-[15px] uppercase tracking-widest shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-transform mt-8">
+                    Start Today's Work <ChevronRight size={16} />
                   </button>
                 )}
               </div>

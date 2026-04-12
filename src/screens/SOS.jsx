@@ -30,21 +30,14 @@ export function SOS() {
     return () => clearInterval(interval);
   }, []);
 
-  // Auto-advance from breathe to ground after 3 full cycles
-  useEffect(() => {
-    if (breathCount >= 3 && phase === 'breathe') {
-      // Don't auto-advance — let user choose
-    }
-  }, [breathCount, phase]);
-
   return (
-    <div className="fixed inset-0 z-[100] bg-[#050010] flex flex-col h-[100dvh] overflow-hidden">
+    <div className="fixed inset-0 z-[100] flex flex-col overflow-hidden" style={{ background: 'var(--bg-app)' }}>
       {/* Dismiss button */}
       <button
         onClick={() => navigate(-1)}
-        className="absolute top-12 right-5 z-20 w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all"
+        className="absolute top-12 left-6 z-20 w-10 h-10 rounded-[14px] bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-all active:scale-95 shadow-sm"
       >
-        <X size={18} />
+        <X size={20} />
       </button>
 
       <AnimatePresence mode="wait">
@@ -54,88 +47,109 @@ export function SOS() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-between h-full py-16 px-6"
+            className="flex flex-col items-center justify-between h-full py-24 px-6 relative"
           >
-            {/* Title */}
-            <div className="text-center pt-4">
-              <motion.h1
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-[30px] font-bold text-white tracking-tight mb-2"
+            {/* Title Section */}
+            <div className="text-center relative z-10">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="inline-flex items-center gap-1.5 bg-white border border-[#F0C2C2] px-4 py-1.5 rounded-[12px] mb-5 shadow-sm"
               >
+                <Heart size={14} className="text-[#D4A1A1] fill-[#F0C2C2]" />
+                <span className="text-[10px] font-bold text-[#D4A1A1] uppercase tracking-widest">Safe Space</span>
+              </motion.div>
+              <h1 className="text-[36px] font-bold text-gray-900 tracking-tight leading-none mb-3">
                 You are safe.
-              </motion.h1>
-              <p className="text-white/40 text-[14px]">Let's breathe together.</p>
+              </h1>
+              <p className="text-gray-500 text-[16px] font-medium tracking-tight">Let's find your center together.</p>
             </div>
 
             {/* Breathing orb */}
-            <div className="flex-1 flex items-center justify-center">
-              <div className="relative flex items-center justify-center">
-                {/* Outer glow rings */}
+            <div className="flex-1 flex items-center justify-center relative scale-110 -mt-10">
+              <div className="relative">
+                {/* Layered Pulsing Backgrounds */}
                 <motion.div
-                  animate={{ scale: breatheIn ? 1.6 : 0.8, opacity: breatheIn ? 0.15 : 0 }}
+                  animate={{ scale: breatheIn ? 1.6 : 0.7, opacity: breatheIn ? 0.3 : 0 }}
                   transition={{ duration: BREATHE_DURATION / 1000, ease: 'easeInOut' }}
-                  className="absolute w-64 h-64 rounded-full bg-secondary"
+                  className="absolute inset-[15%] rounded-full bg-[#F0C2C2] blur-3xl pointer-events-none"
                 />
+                
                 <motion.div
-                  animate={{ scale: breatheIn ? 1.3 : 0.85, opacity: breatheIn ? 0.25 : 0.05 }}
-                  transition={{ duration: BREATHE_DURATION / 1000, ease: 'easeInOut' }}
-                  className="absolute w-52 h-52 rounded-full bg-primary"
+                  animate={{ 
+                    scale: breatheIn ? 1.8 : 0.8, 
+                    opacity: breatheIn ? 0.4 : 0,
+                    rotate: [0, 90]
+                  }}
+                  transition={{ duration: BREATHE_DURATION / 1000, ease: 'linear', rotate: { duration: 16, repeat: Infinity } }}
+                  className="absolute inset-[-40%] rounded-full border border-[#F0C2C2] border-dashed pointer-events-none"
                 />
-                {/* Main orb */}
+                
+                {/* Main Orb */}
                 <motion.div
-                  animate={{ scale: breatheIn ? 1.2 : 0.75 }}
+                  animate={{ scale: breatheIn ? 1.25 : 0.85 }}
                   transition={{ duration: BREATHE_DURATION / 1000, ease: 'easeInOut' }}
-                  className="w-44 h-44 rounded-full bg-gradient-to-br from-primary/60 to-secondary/60 border border-primary/30 flex items-center justify-center"
-                  style={{ boxShadow: '0 0 60px rgba(124,106,245,0.4)' }}
+                  className="w-56 h-56 rounded-full bg-white border border-[#F0C2C2] flex flex-col items-center justify-center shadow-xl relative overflow-hidden group"
                 >
+                  <div className="absolute inset-0 bg-gradient-to-tr from-[#F0C2C2]/30 to-transparent opacity-50" />
+                  
                   <AnimatePresence mode="wait">
-                    <motion.span
+                    <motion.div
                       key={breatheIn ? 'in' : 'out'}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 1.1 }}
-                      transition={{ duration: 0.4 }}
-                      className="text-white text-[16px] font-semibold tracking-widest"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="text-center relative z-10"
                     >
-                      {breatheIn ? 'Breathe In' : 'Breathe Out'}
-                    </motion.span>
+                       <p className="text-[#D4A1A1] text-[10px] font-bold uppercase tracking-widest mb-1">
+                         {breatheIn ? 'Inhale' : 'Exhale'}
+                       </p>
+                       <span className="text-[#A36B6B] text-[24px] font-bold tracking-tight uppercase">
+                         {breatheIn ? 'Breathe' : 'Release'}
+                       </span>
+                    </motion.div>
                   </AnimatePresence>
                 </motion.div>
               </div>
             </div>
 
-            {/* Breath counter */}
-            <div className="text-center mb-4">
-              <p className="text-white/25 text-[12px] font-medium tracking-wider mb-6">
-                {breathCount < 3 ? `${3 - breathCount} more breath${3 - breathCount === 1 ? '' : 's'} to start grounding` : 'Ready when you are'}
-              </p>
+            {/* Integration Section */}
+            <div className="w-full max-w-sm px-4 relative z-10">
+              <div className="mb-6 text-center">
+                 <div className="inline-flex gap-1.5 justify-center mb-3">
+                    {[1,2,3].map(i => (
+                       <div key={i} className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${breathCount >= i ? 'bg-[#D4A1A1] scale-125' : 'bg-gray-200'}`} />
+                    ))}
+                 </div>
+                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                    {breathCount < 3 ? `${3 - breathCount} Breaths Remaining` : 'Center Found'}
+                 </p>
+              </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col gap-3 w-full max-w-xs mx-auto">
+              <div className="grid grid-cols-1 gap-3">
                 <button
                   onClick={() => setPhase('ground')}
-                  className="w-full py-4 bg-white/5 border border-white/10 text-white font-semibold rounded-2xl text-[15px] hover:bg-white/10 transition-all flex items-center justify-center gap-2"
+                  className="h-14 rounded-2xl bg-white border border-gray-200 text-gray-800 font-bold text-[13px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-gray-50 transition-all active:scale-95 shadow-sm"
                 >
-                  Start Grounding Exercise <ChevronRight size={16} />
+                  Grounding Exercise
+                  <ChevronRight size={16} className="text-gray-400" />
                 </button>
+                
                 <button
                   onClick={() => navigate('/chat')}
-                  className="w-full py-3.5 bg-primary/20 border border-primary/30 text-primary-light font-semibold rounded-2xl text-[14px] hover:bg-primary/30 transition-all flex items-center justify-center gap-2"
+                  className="h-14 rounded-2xl bg-[#D4A1A1] text-white font-bold text-[13px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-md hover:bg-[#C48C8C]"
                 >
-                  <MessageCircle size={16} /> Talk to AI now
+                  <MessageCircle size={18} />
+                  Talk to Guide
                 </button>
               </div>
-            </div>
 
-            {/* Emergency */}
-            <div className="text-center pb-2">
-              <a
-                href="tel:9152987821"
-                className="text-[12px] text-red-400/70 font-semibold tracking-wider hover:text-red-400 transition-colors flex items-center justify-center gap-2"
-              >
-                <Phone size={13} /> iCall Helpline: 9152987821
-              </a>
+              <div className="mt-8 text-center">
+                <a href="tel:9152987821" className="inline-flex items-center gap-2 bg-red-50 px-5 py-2.5 rounded-xl border border-red-100 text-red-500 font-bold text-[10px] uppercase tracking-widest hover:bg-red-100 transition-all active:scale-95">
+                  <Phone size={12} strokeWidth={3} />
+                  Emergency Helpline
+                </a>
+              </div>
             </div>
           </motion.div>
         )}
@@ -143,23 +157,23 @@ export function SOS() {
         {phase === 'ground' && (
           <motion.div
             key="ground"
-            initial={{ opacity: 0, x: 40 }}
+            initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -40 }}
-            className="flex flex-col h-full px-6 py-16"
+            exit={{ opacity: 0, x: -20 }}
+            className="flex flex-col h-full px-6 py-20"
           >
             <div className="pt-4 mb-8">
-              <p className="text-primary-light text-[12px] font-bold uppercase tracking-widest mb-2">Grounding Technique</p>
-              <h2 className="text-[26px] font-bold text-white tracking-tight">5-4-3-2-1 Method</h2>
-              <p className="text-white/40 text-[14px] mt-1">Take your time with each step.</p>
+              <p className="text-[#D4A1A1] text-[10px] font-bold uppercase tracking-widest mb-2 border border-[#F0C2C2] bg-white inline-block px-3 py-1 rounded-lg shadow-sm">Grounding Protocol</p>
+              <h2 className="text-[32px] font-bold text-gray-900 tracking-tight leading-none mt-2">5-4-3-2-1 Method</h2>
+              <p className="text-gray-500 text-[15px] mt-2 font-medium">Take a moment with each realization.</p>
             </div>
 
-            {/* Progress dots */}
-            <div className="flex gap-2 mb-8">
+            {/* Progress indicators */}
+            <div className="flex gap-2.5 mb-10">
               {STEPS.map((_, i) => (
                 <div
                   key={i}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${i <= stepIdx ? 'bg-primary flex-1' : 'bg-white/10 w-6'}`}
+                  className={`h-1.5 rounded-full transition-all duration-500 ${i === stepIdx ? 'bg-[#D4A1A1] flex-1' : i < stepIdx ? 'bg-[#F0C2C2] w-4' : 'bg-gray-200 w-4'}`}
                 />
               ))}
             </div>
@@ -168,49 +182,53 @@ export function SOS() {
             <AnimatePresence mode="wait">
               <motion.div
                 key={stepIdx}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="flex-1 flex flex-col items-center justify-center text-center"
+                exit={{ opacity: 0, y: -10 }}
+                className="flex-1 flex flex-col items-center justify-center text-center px-4"
               >
-                <div className="w-24 h-24 rounded-3xl bg-primary/15 border border-primary/25 flex items-center justify-center mb-6 text-[40px]">
-                  {STEPS[stepIdx].icon}
+                <div className="relative mb-6">
+                   <div className="absolute inset-0 bg-[#F0C2C2]/40 blur-2xl rounded-full" />
+                   <div className="relative w-28 h-28 rounded-3xl bg-white border border-gray-100 flex items-center justify-center text-[48px] shadow-lg">
+                     {STEPS[stepIdx].icon}
+                   </div>
+                   <div className="absolute -top-3 -right-3 w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-[20px] font-black text-[#D4A1A1] shadow-md">
+                      {STEPS[stepIdx].number}
+                   </div>
                 </div>
-                <div className="text-[64px] font-black gradient-text mb-2 leading-none">
-                  {STEPS[stepIdx].number}
-                </div>
-                <h3 className="text-[22px] font-bold text-white mb-3 tracking-tight">
+                
+                <h3 className="text-[26px] font-bold text-gray-900 mb-3 tracking-tight leading-tight">
                   {STEPS[stepIdx].title}
                 </h3>
-                <p className="text-white/60 text-[16px] leading-relaxed max-w-xs">
+                <p className="text-gray-500 text-[16px] leading-relaxed font-medium">
                   {STEPS[stepIdx].desc}
                 </p>
               </motion.div>
             </AnimatePresence>
 
             {/* Navigation */}
-            <div className="flex gap-3 mt-8 mb-2">
-              {stepIdx > 0 && (
-                <button
-                  onClick={() => setStepIdx(i => i - 1)}
-                  className="flex-1 py-4 bg-white/5 border border-white/8 text-white/60 font-semibold rounded-2xl text-[15px] hover:bg-white/10 transition-all"
-                >
-                  Back
-                </button>
-              )}
+            <div className="grid grid-cols-2 gap-3 mt-8">
+              <button
+                disabled={stepIdx === 0}
+                onClick={() => setStepIdx(i => i - 1)}
+                className={`h-14 rounded-2xl flex items-center justify-center font-bold text-[13px] uppercase tracking-widest transition-all ${stepIdx === 0 ? 'opacity-0 pointer-events-none' : 'bg-white border border-gray-200 text-gray-500 shadow-sm active:scale-95 hover:bg-gray-50'}`}
+              >
+                Back
+              </button>
+              
               {stepIdx < STEPS.length - 1 ? (
                 <button
                   onClick={() => setStepIdx(i => i + 1)}
-                  className="flex-1 py-4 bg-primary text-white font-bold rounded-2xl text-[15px] btn-glow hover:opacity-90 transition-all flex items-center justify-center gap-2"
+                  className="h-14 rounded-2xl bg-[#1E2A4A] text-white font-bold text-[13px] uppercase tracking-widest shadow-md flex items-center justify-center gap-2 transform active:scale-95 transition-all"
                 >
-                  Next Step <ChevronRight size={16} />
+                  Next <ChevronRight size={16} className="text-white/70" />
                 </button>
               ) : (
                 <button
                   onClick={() => setPhase('done')}
-                  className="flex-1 py-4 bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-2xl text-[15px] btn-glow hover:opacity-90 transition-all"
+                  className="h-14 rounded-2xl bg-[#D4A1A1] text-white font-bold text-[13px] uppercase tracking-widest shadow-md transform active:scale-95 transition-all"
                 >
-                  I feel more grounded ✓
+                  Complete
                 </button>
               )}
             </div>
@@ -222,42 +240,46 @@ export function SOS() {
             key="done"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center h-full text-center px-6"
+            className="flex flex-col items-center justify-center h-full text-center px-6 relative"
           >
+            <div className="absolute top-[20%] w-64 h-64 bg-[#C5D5F7] opacity-20 rounded-full blur-3xl pointer-events-none" />
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', stiffness: 200, damping: 12, delay: 0.2 }}
-              className="text-[72px] mb-6"
+              className="w-24 h-24 bg-white border border-gray-100 shadow-lg rounded-3xl flex items-center justify-center text-[40px] mb-8 relative z-10"
             >
               💙
             </motion.div>
-            <h2 className="text-[28px] font-bold text-white tracking-tight mb-3">
+            <h2 className="text-[32px] font-bold text-gray-900 tracking-tight mb-3 relative z-10">
               You did it.
             </h2>
-            <p className="text-white/50 text-[16px] leading-relaxed max-w-xs mb-12">
+            <p className="text-gray-500 text-[15px] leading-relaxed max-w-xs mb-10 font-medium relative z-10">
               That took courage. You're still here, and that matters. Take this peace with you.
             </p>
 
-            <div className="w-full max-w-xs flex flex-col gap-3">
+            <div className="w-full max-w-sm flex flex-col gap-3 relative z-10">
               <button onClick={() => navigate('/chat')}
-                className="w-full py-4 bg-primary/20 border border-primary/30 text-primary-light font-semibold rounded-2xl flex items-center justify-center gap-2 hover:bg-primary/30 transition-all">
-                <MessageCircle size={17} /> Talk to your AI guide
+                className="w-full py-4 bg-white border border-gray-200 text-[#1E2A4A] font-bold rounded-2xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 hover:bg-gray-50">
+                <MessageCircle size={16} /> Talk to your AI guide
               </button>
               <button onClick={() => navigate('/meditate')}
-                className="w-full py-4 bg-white/5 border border-white/8 text-white/70 font-semibold rounded-2xl hover:bg-white/10 transition-all">
+                className="w-full py-4 bg-white border border-[#C2E8D8] text-[#1A3D2E] font-bold rounded-2xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 hover:bg-gray-50">
                 🪴 Try a meditation
               </button>
               <button onClick={() => navigate('/home')}
-                className="w-full py-3 text-white/30 text-[14px] hover:text-white/50 transition-colors">
+                className="w-full py-4 text-gray-400 font-bold text-[13px] uppercase tracking-widest hover:text-gray-600 transition-colors">
                 Return home
               </button>
             </div>
 
-            <div className="absolute bottom-8">
-              <a href="tel:9152987821" className="text-[12px] text-red-400/60 font-semibold tracking-wider hover:text-red-400 transition-colors flex items-center gap-2">
-                <Phone size={12} /> If you need immediate help · 9152987821
-              </a>
+            <div className="absolute bottom-10 w-full px-8 flex justify-center pb-safe">
+               <a href="tel:9152987821" className="bg-red-50 border border-red-100 shadow-sm px-5 py-3.5 rounded-2xl flex items-center gap-3 w-full max-w-sm justify-center active:scale-95 transition-transform">
+                 <div className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
+                 <span className="text-[10px] text-red-500 font-bold uppercase tracking-widest">
+                    Emergency Helpline · 9152987821
+                 </span>
+               </a>
             </div>
           </motion.div>
         )}

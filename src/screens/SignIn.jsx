@@ -379,18 +379,21 @@ export function SignIn() {
       <div className="z-10 w-full max-w-sm">
         {/* Logo */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-10"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="text-center mb-12"
         >
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-gradient-to-br from-primary to-secondary mb-5 shadow-glow-primary">
-            <span className="text-3xl">🪷</span>
+          <div className="relative inline-flex mb-6">
+            <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full scale-110" />
+            <div className="relative w-20 h-20 rounded-[28px] glass border border-white/10 flex items-center justify-center shadow-2xl">
+              <span className="text-4xl drop-shadow-md">🪷</span>
+            </div>
           </div>
-          <h1 className="text-[34px] text-white font-bold tracking-tight mb-2">
+          <h1 className="text-[38px] text-white font-black tracking-tight mb-2 leading-none">
             {isLogin ? 'Welcome back' : 'Begin healing'}
           </h1>
-          <p className="text-white/50 text-[14px] font-medium">
+          <p className="text-white/40 text-[15px] font-bold tracking-tight">
             {isLogin ? 'Continue your journey inward.' : 'Your safe space awaits.'}
           </p>
         </motion.div>
@@ -415,14 +418,16 @@ export function SignIn() {
           transition={{ delay: 0.1 }}
           onClick={handleGoogleSignIn}
           disabled={googleLoading}
-          className="w-full py-4 mb-4 rounded-2xl bg-white/5 border border-white/10 text-white font-semibold text-[15px] flex items-center justify-center gap-3 hover:bg-white/10 transition-all active:scale-95 disabled:opacity-60"
+          className="w-full h-16 mb-4 rounded-[22px] glass-light border border-white/10 text-white font-bold text-[15px] flex items-center justify-center gap-3 hover:bg-white/10 transition-all active:scale-[0.98] disabled:opacity-60 shadow-lg"
         >
           {googleLoading ? (
             <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
           ) : (
-            <GoogleIcon />
+            <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center shadow-inner">
+              <GoogleIcon />
+            </div>
           )}
-          {googleLoading ? 'Signing in...' : 'Continue with Google'}
+          {googleLoading ? 'Accessing...' : 'Sign in with Google'}
         </motion.button>
 
         {/* Divider */}
@@ -442,50 +447,50 @@ export function SignIn() {
           className="flex flex-col space-y-3"
         >
           {/* Email */}
-          <div className="relative">
-            <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
+          <div className="relative group">
+            <Mail size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-primary transition-colors" />
             <input
               type="email"
               placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-surface2 border border-white/6 rounded-2xl pl-11 pr-5 py-4 text-white text-[15px] placeholder:text-white/25 focus:outline-none focus:border-primary/50 focus:ring-1 ring-primary/30 transition-all font-medium"
+              className="w-full bg-white/5 border border-white/10 rounded-[22px] pl-12 pr-6 py-4 text-white text-[15px] placeholder:text-white/20 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all font-medium"
               required
             />
           </div>
 
           {/* Password */}
-          <div className="relative">
-            <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
+          <div className="relative group">
+            <Lock size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-primary transition-colors" />
             <input
               type={showPass ? 'text' : 'password'}
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-surface2 border border-white/6 rounded-2xl pl-11 pr-12 py-4 text-white text-[15px] placeholder:text-white/25 focus:outline-none focus:border-primary/50 focus:ring-1 ring-primary/30 transition-all font-medium"
+              className="w-full bg-white/5 border border-white/10 rounded-[22px] pl-12 pr-12 py-4 text-white text-[15px] placeholder:text-white/20 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all font-medium"
               required
               minLength={6}
             />
             <button
               type="button"
               onClick={() => setShowPass(!showPass)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+              className="absolute right-5 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors"
             >
-              {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+              {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-1 py-4 rounded-2xl bg-gradient-to-r from-primary to-secondary text-white font-bold text-[16px] btn-glow hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full mt-2 h-16 rounded-[22px] bg-primary text-white font-black text-[15px] uppercase tracking-[0.2em] btn-glow hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 shadow-glow-primary"
           >
             {loading ? (
               <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <>
-                {isLogin ? 'Sign In' : 'Create Account'}
-                <ArrowRight size={18} />
+                {isLogin ? 'Enter Space' : 'Begin Journey'}
+                <ArrowRight size={20} />
               </>
             )}
           </button>
