@@ -92,7 +92,7 @@ export function Onboarding() {
         >
           <div className="w-8 h-8 rounded-full bg-primary/40" />
         </motion.div>
-        <p className="font-semibold text-xl text-white/80 tracking-tight">Getting to know you...</p>
+        <p className="font-semibold text-xl text-sub tracking-tight">Getting to know you...</p>
       </div>
     );
   }
@@ -102,9 +102,9 @@ export function Onboarding() {
   return (
     <div className="min-h-screen bg-bg flex flex-col">
       <div className="pt-safe sticky top-0 ios-glass z-10 pb-4">
-        <div className="w-full h-[2px] bg-white/10">
+        <div className="w-full h-[3px] bg-surface2">
           <motion.div 
-            className="h-full bg-secondary"
+            className="h-full bg-primary"
             initial={{ width: 0 }}
             animate={{ width: `${progressPercent}%` }}
             transition={{ duration: 0.3 }}
@@ -113,14 +113,14 @@ export function Onboarding() {
         <div className="flex justify-between items-center px-6 mt-4">
           <div className="w-8">
             {step > 1 && (
-              <button onClick={() => setStep(prev => prev - 1)} className="text-white/60 p-2 -ml-2 bg-transparent border-none">
+              <button onClick={() => setStep(prev => prev - 1)} className="text-muted p-2 -ml-2 hover:text-main transition-colors bg-transparent border-none">
                 <ArrowLeft size={20} />
               </button>
             )}
           </div>
-          <p className="text-[11px] text-white/50 uppercase tracking-widest font-semibold">Step {step} of 5</p>
+          <p className="text-[11px] text-muted uppercase tracking-widest font-bold">Step {step} of 5</p>
           <div className="w-8 flex justify-end">
-            <button onClick={handleSkip} className="text-[12px] text-white/40 bg-transparent border-none">Skip</button>
+            <button onClick={handleSkip} className="text-[12px] font-bold text-muted hover:text-sub bg-transparent border-none">Skip</button>
           </div>
         </div>
       </div>
@@ -135,11 +135,11 @@ export function Onboarding() {
             transition={{ duration: 0.3 }}
             className="flex-1 flex flex-col"
           >
-            <h1 className="text-[32px] font-bold leading-tight mb-2 text-white tracking-tight">
+            <h1 className="text-[32px] font-bold leading-tight mb-2 text-[#1A1F36] tracking-tight">
               {currentQ.title}
             </h1>
             {!currentQ.isInput && (
-              <p className="text-[15px] text-white/50 mb-8 font-medium tracking-tight">
+              <p className="text-[15px] text-[#4A5568] mb-8 font-medium tracking-tight">
                 No right answer — just how you feel right now
               </p>
             )}
@@ -147,13 +147,13 @@ export function Onboarding() {
             <div className="space-y-4 mb-10 w-full mt-4">
               {currentQ.isInput ? (
                 <div className="flex flex-col space-y-4">
-                  <label className="text-sm text-white/70">{currentQ.label}</label>
+                  <label className="text-sm font-bold text-sub">{currentQ.label}</label>
                   <Input 
                     value={answers[step] || ''} 
                     onChange={e => handleSelect(null, e.target.value)}
                     placeholder={currentQ.placeholder}
                   />
-                  <p className="text-xs text-white/40 mt-2">{currentQ.subtext}</p>
+                  <p className="text-xs text-muted mt-2 font-medium">{currentQ.subtext}</p>
                 </div>
               ) : (
                 currentQ.options.map((opt, idx) => {
@@ -170,11 +170,11 @@ export function Onboarding() {
                             handleSelect(idx, opt);
                           }
                         }}
-                        className={`w-full text-left px-5 py-4 rounded-2xl border transition-all duration-200 flex items-center justify-between
-                          ${isSelected ? 'bg-primary/10 border-primary' : 'bg-surface2 border-white/5 hover:border-white/20'}
+                        className={`w-full text-left px-6 py-5 rounded-[20px] border transition-all duration-200 flex items-center justify-between shadow-sm
+                          ${isSelected ? 'bg-primary/5 border-primary shadow-glow-primary' : 'bg-surface border-subtle hover:bg-surface2'}
                         `}
                       >
-                        <span className="text-[15px] font-medium tracking-tight">{opt}</span>
+                        <span className={`text-[15px] font-bold tracking-tight ${isSelected ? 'text-primary' : 'text-main'}`}>{opt}</span>
                         {isSelected && <div className="text-primary ml-3 text-lg">✓</div>}
                       </button>
 
@@ -205,7 +205,7 @@ export function Onboarding() {
 
         <div className="mt-auto pb-10">
           <Button 
-            className={`w-full ${isNextDisabled ? 'opacity-30' : 'opacity-100'}`} 
+            className={`w-full shadow-lg ${isNextDisabled ? 'opacity-40 grayscale' : 'opacity-100'}`} 
             onClick={handleNext}
             disabled={isNextDisabled}
           >

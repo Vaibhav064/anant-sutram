@@ -78,17 +78,17 @@ function VerifyEmailScreen({ email, onBack }) {
         className="text-6xl mb-6"
       >📬</motion.div>
 
-      <h1 className="text-[28px] text-white font-bold mb-2 tracking-tight">Check your inbox</h1>
-      <p className="text-white/50 text-sm mb-1">We sent a verification link to</p>
+      <h1 className="text-[28px] text-main font-bold mb-2 tracking-tight">Check your inbox</h1>
+      <p className="text-muted text-sm mb-1">We sent a verification link to</p>
       <p className="text-primary font-semibold text-[15px] mb-8 break-all">{email}</p>
 
-      <div className="bg-surface2 border border-white/5 rounded-2xl p-5 text-left mb-8 space-y-3">
+      <div className="bg-surface border border-subtle rounded-2xl p-5 text-left mb-8 space-y-3">
         {['1. Open the email from Anant Sutram', '2. Click "Verify Email Address"', '3. Come back here and sign in'].map(s => (
-          <p key={s} className="text-white/60 text-[13px] font-medium">{s}</p>
+          <p key={s} className="text-sub text-[13px] font-medium">{s}</p>
         ))}
       </div>
 
-      {error && <div className="bg-alert/20 border border-alert/30 text-alert p-3 rounded-2xl text-[13px] font-medium mb-4">{error}</div>}
+      {error && <div className="bg-alert/10 border border-alert/20 text-alert p-3 rounded-2xl text-[13px] font-medium mb-4">{error}</div>}
 
       {resent ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -102,7 +102,7 @@ function VerifyEmailScreen({ email, onBack }) {
         </button>
       )}
 
-      <button onClick={onBack} className="text-[13px] text-white/40 hover:text-white/70 transition-colors font-medium">
+      <button onClick={onBack} className="text-[13px] text-muted hover:text-sub transition-colors font-medium">
         ← Back to Sign In
       </button>
     </motion.div>
@@ -210,17 +210,9 @@ export function SignIn() {
       localStorage.setItem('token', data.token);
       setUser(data.user);
 
-      // Apply saved theme preference immediately
-      if (data.user?.settings?.theme) {
-        const { applyTheme } = await import('../context/ThemeContext');
-        // Fallback: set on document directly
-        const t = data.user.settings.theme;
-        const resolved = t === 'system'
-          ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
-          : t;
-        document.documentElement.setAttribute('data-theme', resolved);
-        localStorage.setItem('anant_theme', t);
-      }
+      // Force strictly light theme ignoring legacy user settings
+      document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('anant_theme', 'light');
 
       if (data.isNew) navigate('/onboarding');
       else navigate('/home');
@@ -264,6 +256,10 @@ export function SignIn() {
       localStorage.setItem('token', data.token);
       setUser(data.user);
       setNickname(data.user.nickname);
+      
+      // Enforce premium wellness light theme explicitly on login
+      document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('anant_theme', 'light');
 
       if (isLogin) navigate('/home');
       else navigate('/onboarding');
@@ -294,24 +290,24 @@ export function SignIn() {
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
             className="fixed inset-x-4 z-[201] top-1/2 -translate-y-1/2 max-w-md mx-auto"
           >
-            <div className="bg-surface2 border border-white/10 rounded-3xl shadow-[0_24px_80px_rgba(0,0,0,0.7)] overflow-hidden">
-              <div className="bg-gradient-to-r from-primary/20 to-secondary/15 border-b border-white/8 px-6 py-5 flex items-center justify-between">
+            <div className="bg-surface border border-subtle rounded-3xl shadow-[0_24px_80px_rgba(0,0,0,0.15)] overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/10 to-secondary/5 border-b border-subtle px-6 py-5 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-2xl bg-white border border-subtle flex items-center justify-center shadow-sm">
                     <GoogleIcon />
                   </div>
                   <div>
-                    <h3 className="text-white font-bold text-[16px] tracking-tight">Setup Google Sign-In</h3>
-                    <p className="text-white/40 text-[11px]">One-time configuration needed</p>
+                    <h3 className="text-main font-bold text-[16px] tracking-tight">Setup Google Sign-In</h3>
+                    <p className="text-muted text-[11px]">One-time configuration needed</p>
                   </div>
                 </div>
-                <button onClick={() => setShowGoogleSetup(false)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                <button onClick={() => setShowGoogleSetup(false)} className="w-8 h-8 rounded-full bg-surface2 flex items-center justify-center text-muted hover:text-main transition-all">
                   <X size={14} />
                 </button>
               </div>
 
               <div className="px-6 py-5">
-                <p className="text-white/60 text-[13px] leading-relaxed mb-5">
+                <p className="text-sub text-[13px] leading-relaxed mb-5">
                   Google sign-in needs a Client ID from Google Cloud Console. It's free and takes about 3 minutes.
                 </p>
 
@@ -323,28 +319,28 @@ export function SignIn() {
                     { step: '4', text: 'Copy the Client ID and paste it below' },
                   ].map(({ step, text, url }) => (
                     <div key={step} className="flex items-start gap-3">
-                      <span className="w-6 h-6 rounded-full bg-primary/20 text-primary text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">{step}</span>
+                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">{step}</span>
                       <div>
-                        <p className="text-white/80 text-[13px] font-medium">{text}</p>
+                        <p className="text-main text-[13px] font-medium">{text}</p>
                         {url && (
-                          <a href={url} target="_blank" rel="noopener noreferrer"
-                            className="text-primary text-[12px] font-semibold hover:underline">
-                            → Open Google Cloud Console
-                          </a>
+                           <a href={url} target="_blank" rel="noopener noreferrer"
+                             className="text-primary text-[12px] font-semibold hover:underline">
+                             → Open Google Cloud Console
+                           </a>
                         )}
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <div className="bg-bg rounded-2xl border border-white/6 p-3 mb-5">
-                  <p className="text-white/30 text-[9px] font-bold uppercase tracking-widest mb-1">Add to .env.local</p>
-                  <code className="text-primary-light text-[12px] font-mono block select-all">
+                <div className="bg-surface2 rounded-2xl border border-subtle p-3 mb-5">
+                  <p className="text-muted text-[9px] font-bold uppercase tracking-widest mb-1">Add to .env.local</p>
+                  <code className="text-primary text-[12px] font-mono block select-all">
                     VITE_GOOGLE_CLIENT_ID=&quot;paste-your-id-here.apps.googleusercontent.com&quot;
                   </code>
                 </div>
 
-                <p className="text-white/30 text-[12px] text-center mb-4">After adding, restart the dev server with <code className="text-white/50 font-mono">npm run dev</code></p>
+                <p className="text-muted text-[12px] text-center mb-4">After adding, restart the dev server with <code className="text-sub font-mono">npm run dev</code></p>
 
                 <button
                   onClick={() => setShowGoogleSetup(false)}
@@ -386,14 +382,14 @@ export function SignIn() {
         >
           <div className="relative inline-flex mb-6">
             <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full scale-110" />
-            <div className="relative w-20 h-20 rounded-[28px] glass border border-white/10 flex items-center justify-center shadow-2xl">
-              <span className="text-4xl drop-shadow-md">🪷</span>
+            <div className="relative w-20 h-20 rounded-[28px] bg-white border border-subtle flex items-center justify-center shadow-lg">
+              <span className="text-4xl drop-shadow-sm">🪷</span>
             </div>
           </div>
-          <h1 className="text-[38px] text-white font-black tracking-tight mb-2 leading-none">
+          <h1 className="text-[38px] text-main font-black tracking-tight mb-2 leading-none">
             {isLogin ? 'Welcome back' : 'Begin healing'}
           </h1>
-          <p className="text-white/40 text-[15px] font-bold tracking-tight">
+          <p className="text-sub text-[15px] font-bold tracking-tight">
             {isLogin ? 'Continue your journey inward.' : 'Your safe space awaits.'}
           </p>
         </motion.div>
@@ -404,7 +400,7 @@ export function SignIn() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="bg-alert/15 border border-alert/25 text-alert/90 p-3.5 rounded-2xl text-[13px] font-medium tracking-tight text-center overflow-hidden mb-4"
+              className="bg-alert/10 border border-alert/20 text-alert p-3.5 rounded-2xl text-[13px] font-medium tracking-tight text-center overflow-hidden mb-4"
             >
               {errorMsg}
             </motion.div>
@@ -418,12 +414,12 @@ export function SignIn() {
           transition={{ delay: 0.1 }}
           onClick={handleGoogleSignIn}
           disabled={googleLoading}
-          className="w-full h-16 mb-4 rounded-[22px] glass-light border border-white/10 text-white font-bold text-[15px] flex items-center justify-center gap-3 hover:bg-white/10 transition-all active:scale-[0.98] disabled:opacity-60 shadow-lg"
+          className="w-full h-16 mb-4 rounded-[22px] bg-surface border border-subtle text-main font-bold text-[15px] flex items-center justify-center gap-3 hover:bg-surface2 transition-all active:scale-[0.98] disabled:opacity-60 shadow-sm"
         >
           {googleLoading ? (
-            <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <span className="w-5 h-5 border-2 border-muted border-t-main rounded-full animate-spin" />
           ) : (
-            <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center shadow-inner">
+            <div className="w-8 h-8 rounded-xl bg-white border border-subtle flex items-center justify-center shadow-sm">
               <GoogleIcon />
             </div>
           )}
@@ -433,9 +429,9 @@ export function SignIn() {
         {/* Divider */}
         <div className="relative my-6 flex items-center justify-center">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-white/8" />
+            <div className="w-full border-t border-subtle" />
           </div>
-          <div className="relative bg-bg px-4 text-[11px] text-white/25 uppercase tracking-[0.2em] font-bold">or</div>
+          <div className="relative bg-bg px-4 text-[11px] text-muted uppercase tracking-[0.2em] font-bold">or</div>
         </div>
 
         {/* Email/Password form */}
@@ -448,33 +444,33 @@ export function SignIn() {
         >
           {/* Email */}
           <div className="relative group">
-            <Mail size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-primary transition-colors" />
+            <Mail size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary transition-colors" />
             <input
               type="email"
               placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-[22px] pl-12 pr-6 py-4 text-white text-[15px] placeholder:text-white/20 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all font-medium"
+              className="w-full bg-surface border border-subtle rounded-[22px] pl-12 pr-6 py-4 text-main text-[15px] placeholder:text-muted focus:outline-none focus:border-primary/50 focus:bg-surface2 transition-all font-medium shadow-sm"
               required
             />
           </div>
 
           {/* Password */}
           <div className="relative group">
-            <Lock size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-primary transition-colors" />
+            <Lock size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary transition-colors" />
             <input
               type={showPass ? 'text' : 'password'}
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-[22px] pl-12 pr-12 py-4 text-white text-[15px] placeholder:text-white/20 focus:outline-none focus:border-primary/50 focus:bg-white/10 transition-all font-medium"
+              className="w-full bg-surface border border-subtle rounded-[22px] pl-12 pr-12 py-4 text-main text-[15px] placeholder:text-muted focus:outline-none focus:border-primary/50 focus:bg-surface2 transition-all font-medium shadow-sm"
               required
               minLength={6}
             />
             <button
               type="button"
               onClick={() => setShowPass(!showPass)}
-              className="absolute right-5 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors"
+              className="absolute right-5 top-1/2 -translate-y-1/2 text-muted hover:text-main transition-colors"
             >
               {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
@@ -499,7 +495,7 @@ export function SignIn() {
         <div className="mt-4 text-center">
           <button
             onClick={() => { setIsLogin(!isLogin); setErrorMsg(''); }}
-            className="text-[13px] text-primary/80 font-medium hover:text-primary transition-colors"
+            className="text-[13px] text-primary/90 font-bold hover:text-primary transition-colors"
           >
             {isLogin ? "Don't have an account? Sign Up" : 'Already have an account? Log In'}
           </button>
@@ -508,19 +504,19 @@ export function SignIn() {
         {/* Divider */}
         <div className="relative my-8 flex items-center justify-center">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-white/8" />
+            <div className="w-full border-t border-subtle" />
           </div>
-          <div className="relative bg-bg px-4 text-[11px] text-white/25 uppercase tracking-[0.2em] font-bold">or</div>
+          <div className="relative bg-bg px-4 text-[11px] text-muted uppercase tracking-[0.2em] font-bold">or</div>
         </div>
 
         <button
           onClick={handleAnon}
-          className="w-full py-3.5 rounded-2xl bg-white/4 text-white/60 font-medium text-[14px] border border-white/6 hover:bg-white/8 hover:text-white/80 transition-all"
+          className="w-full py-3.5 rounded-2xl bg-surface text-sub font-medium text-[14px] border border-subtle hover:bg-surface2 hover:text-main transition-all shadow-sm"
         >
           Continue Anonymously
         </button>
 
-        <p className="mt-10 text-center text-white/25 text-[11px] leading-relaxed px-4">
+        <p className="mt-10 text-center text-muted text-[11px] leading-relaxed px-4">
           By continuing, you agree to our Terms of Service and Privacy Policy.
           Your journal and chats are end-to-end encrypted.
         </p>
