@@ -4,10 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ArrowRight, ShieldCheck, Phone, AlertCircle, MessageCircle, Star } from 'lucide-react';
 import { ASSESSMENTS } from '../lib/assessmentData';
 import { apiFetch } from '../lib/api';
-import { SmoothAreaChart, ScoreGauge, SeverityBar, SmoothAreaChartLight } from '../components/ui/SmoothAreaChart';
+import { SmoothAreaChartLight } from '../components/ui/SmoothAreaChart';
 import { Card } from '../components/ui/Card';
-import { HEALERS_DATA } from './Healers'; // Import healer data
+import { HEALERS_DATA } from './Healers';
 import { OnlineDot } from '../components/ui/Badge';
+import { useStore } from '../store/useStore';
 
 const STAGE_INTRO = 'intro';
 const STAGE_QUESTIONS = 'questions';
@@ -321,6 +322,99 @@ export function MentalTestEngine() {
 
         <div className="px-6 pb-10">
 
+          {/* ── Score Gauge ── */}
+          {latestScore && severity && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.05 }}
+              className="mb-8"
+            >
+              <h2 className="text-[16px] font-bold text-main mb-4">Your Score</h2>
+              <div className="bg-surface rounded-[24px] p-6 shadow-sm border border-soft flex flex-col items-center">
+                {/* Light-mode gauge built inline */}
+                <div className="relative flex items-center justify-center mb-4" style={{ width: 200, height: 200 }}>
+                  <svg width="200" height="200" viewBox="0 0 120 120" className="-rotate-90">
+                    <circle cx="60" cy="60" r="52" fill="none" stroke="#E5E7EB" strokeWidth="8" strokeLinecap="round" />
+                    <motion.circle
+                      cx="60" cy="60" r="52"
+                      fill="none"
+                      stroke={severity.color}
+                      strokeWidth="8"
+                      strokeLinecap="round"
+                      strokeDasharray={2 * Math.PI * 52}
+                      initial={{ strokeDashoffset: 2 * Math.PI * 52 }}
+                      animate={{ strokeDashoffset: (2 * Math.PI * 52) * (1 - (latestScore.score / test.maxScore)) }}
+                      transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+                    />
+                    <motion.circle
+                      cx="60" cy="60" r="52"
+                      fill="none"
+                      stroke={severity.color}
+                      strokeWidth="14"
+                      strokeLinecap="round"
+                      strokeDasharray={2 * Math.PI * 52}
+                      opacity="0.12"
+                      initial={{ strokeDashoffset: 2 * Math.PI * 52 }}
+                      animate={{ strokeDashoffset: (2 * Math.PI * 52) * (1 - (latestScore.score / test.maxScore)) }}
+                      transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <motion.span
+                      className="text-[44px] font-black leading-none tracking-tight"
+                      style={{ color: severity.color }}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.7 }}
+                    >
+                      {latestScore.score}
+                    </motion.span>
+                    <span className="text-[11px] text-muted font-bold uppercase tracking-widest mt-1">of {test.maxScore}</span>
+                  </div>
+                </div>
+                {/* Severity label */}
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9 }}
+                  className="px-5 py-2 rounded-full text-[13px] font-black tracking-wide"
+                  style={{ backgroundColor: severity.color + '20', color: severity.color }}
+                >
+                  {severity.label}
+                </motion.div>
+                {/* Severity bar */}
+                <div className="w-full mt-5 px-2">
+                  <div className="flex gap-1.5">
+                    {['normal','mild','moderate','severe'].map((lvl, i) => {
+                      const colors = ['#34D399','#FBBF24','#FB923C','#F87171'];
+                      const levels = ['normal','mild','moderate','severe'];
+                      const currentIdx = levels.indexOf(severity.level);
+                      return (
+                        <motion.div key={lvl} className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: '#E5E7EB' }}>
+                          <motion.div
+                            className="h-full rounded-full"
+                            style={{ backgroundColor: colors[i] }}
+                            initial={{ width: 0 }}
+                            animate={{ width: i <= currentIdx ? '100%' : '0%' }}
+                            transition={{ duration: 0.5, delay: 0.8 + i * 0.1 }}
+                          />
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex justify-between mt-2">
+                    {['Normal','Mild','Moderate','Severe'].map((l, i) => {
+                      const colors = ['#34D399','#FBBF24','#FB923C','#F87171'];
+                      const levels = ['normal','mild','moderate','severe'];
+                      return <span key={l} className="text-[9px] font-black uppercase tracking-wider" style={{ color: levels.indexOf(severity.level) === i ? colors[i] : '#CBD5E1' }}>{l}</span>;
+                    })}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {/* ── Graph Section ── */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -416,18 +510,17 @@ export function MentalTestEngine() {
             <button 
               disabled={isLocked}
               onClick={() => setStage(STAGE_INTRO)}
-              className={`w-full py-4.5 rounded-2xl font-bold text-[15px] transition-all shadow-lg
+              className={`w-full py-5 rounded-2xl font-bold text-[15px] transition-all shadow-lg
                 ${isLocked 
                   ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
                   : 'bg-primary text-white hover:bg-primary/90 active:scale-[0.98] shadow-[0_8px_24px_rgba(124,106,245,0.35)]'}`
               }
-              style={{ paddingTop: '18px', paddingBottom: '18px' }}
             >
               {isLocked ? '🔒 Assessment Locked' : 'Take the test'}
             </button>
             
             {isLocked && (
-              <p className="text-center text-[11px] font-medium text-gray-400 mt-3">
+              <p className="text-center text-[11px] font-medium text-gray-400 mt-3 mb-6">
                 Unlock again in {daysUntilUnlock} days to maintain accuracy
               </p>
             )}

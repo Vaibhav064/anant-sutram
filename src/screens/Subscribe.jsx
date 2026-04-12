@@ -62,10 +62,10 @@ export function Subscribe() {
 
         {/* SHAKTI TIER */}
         <div className="bg-surface bg-gradient-to-b from-primary/10 to-transparent border border-primary/30 rounded-3xl p-7 relative overflow-hidden shadow-glow-primary">
-          <div className="absolute top-4 right-4 bg-primary text-white text-[9px] font-black px-3 py-1.5 rounded-full tracking-widest shadow-lg border border-white/20 z-10">
+          <div className="absolute top-3 right-3 bg-primary text-white text-[9px] font-black px-3 py-1.5 rounded-full tracking-widest shadow-lg border border-white/20 z-10">
             MOST POPULAR
           </div>
-          <div className="flex justify-between items-center mb-6 mt-2">
+          <div className="flex justify-between items-center mb-6 mt-5">
             <h2 className="text-primary font-display font-bold text-[26px] tracking-tight">SHAKTI</h2>
             <div className="text-right">
               <span className="text-main font-bold text-[24px]">₹{isYearly ? '999' : '99'}</span>

@@ -149,90 +149,195 @@ export function Meditate() {
   };
 
   const selectedEmotionObj = EMOTIONS.find(e => e.id === selectedEmotion);
+  const circumference = 2 * Math.PI * 108;
+  const progress = totalSeconds > 0 ? (secondsLeft / totalSeconds) : 0;
+
 
   return (
-    <div className="min-h-[100dvh] flex flex-col pb-28 relative overflow-hidden" style={{ background: 'var(--bg-app)' }}>
+    <div className="h-[100dvh] flex flex-col relative overflow-hidden">
       
+      {/* ── Cinematic Background — always dark during session ── */}
+      <div 
+        className="absolute inset-0 z-0 transition-all duration-1000"
+        style={{ 
+          background: isSessionActive
+            ? 'linear-gradient(160deg, #1a1240 0%, #0f2a1e 50%, #1a0a2e 100%)'
+            : 'var(--bg-app)'
+        }}
+      />
+      
+      {/* ── Mesh gradient blobs (session only) ── */}
+      {isSessionActive && (
+        <>
+          <motion.div
+            animate={{ scale: [1, 1.3, 1], x: [0, 30, 0], y: [0, -20, 0] }}
+            transition={{ repeat: Infinity, duration: 14, ease: 'easeInOut' }}
+            className="absolute -top-32 -left-32 w-[420px] h-[420px] rounded-full pointer-events-none"
+            style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.35) 0%, transparent 70%)', filter: 'blur(60px)' }}
+          />
+          <motion.div
+            animate={{ scale: [1, 1.2, 1], x: [0, -20, 0], y: [0, 30, 0] }}
+            transition={{ repeat: Infinity, duration: 18, ease: 'easeInOut', delay: 3 }}
+            className="absolute -bottom-48 -right-24 w-[500px] h-[500px] rounded-full pointer-events-none"
+            style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.28) 0%, transparent 70%)', filter: 'blur(80px)' }}
+          />
+          <motion.div
+            animate={{ scale: [1, 1.4, 1], opacity: [0.6, 0.9, 0.6] }}
+            transition={{ repeat: Infinity, duration: 10, ease: 'easeInOut', delay: 6 }}
+            className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-[300px] h-[300px] rounded-full pointer-events-none"
+            style={{ background: 'radial-gradient(circle, rgba(251,113,133,0.12) 0%, transparent 70%)', filter: 'blur(60px)' }}
+          />
+          {/* Ambient particle dots */}
+          {[...Array(6)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1.5 h-1.5 rounded-full pointer-events-none"
+              style={{
+                left: `${15 + i * 14}%`,
+                top: `${20 + (i % 3) * 25}%`,
+                backgroundColor: ['rgba(139,92,246,0.6)', 'rgba(52,211,153,0.5)', 'rgba(251,182,206,0.5)', 'rgba(139,92,246,0.4)', 'rgba(52,211,153,0.6)', 'rgba(250,204,21,0.4)'][i]
+              }}
+              animate={{ y: [0, -20, 0], opacity: [0.4, 0.9, 0.4] }}
+              transition={{ repeat: Infinity, duration: 4 + i, ease: 'easeInOut', delay: i * 0.8 }}
+            />
+          ))}
+        </>
+      )}
+
       {/* ── Header ── */}
-      <div className="sticky top-0 z-30 pt-12 pb-4 px-6 flex items-center justify-between" style={{ background: 'var(--bg-app)' }}>
-        <button onClick={() => navigate('/home')} className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors active:scale-90 shadow-sm">
+      <div className={`sticky top-0 z-30 pt-12 pb-4 px-6 flex items-center justify-between ${isSessionActive ? 'bg-transparent' : ''}`}>
+        <button 
+          onClick={() => navigate('/home')} 
+          className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors active:scale-90 shadow-sm
+            ${isSessionActive ? 'bg-white/10 border border-white/20 text-white' : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50'}`
+          }
+        >
           <ArrowLeft size={20} />
         </button>
-        <h1 className="text-[17px] font-bold text-gray-900 tracking-tight">Mindful Reset</h1>
-        <div className="w-10 h-10"></div>
+        <h1 className={`text-[17px] font-bold tracking-tight ${isSessionActive ? 'text-white' : 'text-gray-900'}`}>
+          Mindful Reset
+        </h1>
+        <div className="w-10 h-10" />
       </div>
 
       <AnimatePresence mode="wait">
         {isSessionActive ? (
+          /* ─── SESSION SCREEN (dark cinematic) ─── */
           <motion.div
             key="session"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex-1 flex flex-col items-center justify-center px-8 text-center"
+            className="flex-1 flex flex-col items-center justify-center px-8 text-center relative z-10"
           >
-            {/* Breathing Ring */}
-            <div className="relative w-64 h-64 flex items-center justify-center mb-14">
-              <motion.div 
-                animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.1, 0.3] }}
-                transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
-                className="absolute inset-[0%] rounded-full bg-[#C2E8D8] blur-xl"
+            {/* Breathing Circle */}
+            <div className="relative w-64 h-64 flex items-center justify-center mb-12">
+              {/* Outer glow aura */}
+              <motion.div
+                animate={{ scale: [0.9, 1.2, 0.9], opacity: [0.2, 0.4, 0.2] }}
+                transition={{ repeat: Infinity, duration: 8, ease: 'easeInOut' }}
+                className="absolute inset-0 rounded-full blur-3xl"
+                style={{ background: selectedEmotionObj?.color || '#C2E8D8' }}
               />
-              
-              <div className="relative w-56 h-56 rounded-full bg-white shadow-xl flex flex-col items-center justify-center z-10 border border-[#C2E8D8]">
+
+              {/* Main breathing circle */}
+              <motion.div
+                animate={{ scale: [0.88, 1.08, 0.88] }}
+                transition={{ repeat: Infinity, duration: 8, ease: 'easeInOut' }}
+                className="relative w-56 h-56 rounded-full flex flex-col items-center justify-center z-10"
+                style={{
+                  background: 'rgba(255,255,255,0.10)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  border: '1.5px solid rgba(255,255,255,0.25)',
+                  boxShadow: '0 8px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)'
+                }}
+              >
+                {/* Progress ring */}
                 <svg className="absolute inset-0 w-full h-full -rotate-90">
-                  <circle cx="112" cy="112" r="108" fill="none" stroke="#E5E7EB" strokeWidth="4" />
-                  <motion.circle 
-                    cx="112" cy="112" r="108" 
-                    fill="none" stroke="#C2E8D8" strokeWidth="6" strokeLinecap="round"
-                    strokeDasharray={2 * Math.PI * 108}
-                    initial={false}
-                    animate={{ strokeDashoffset: (2 * Math.PI * 108) * (1 - (secondsLeft / totalSeconds)) }}
-                    transition={{ ease: "linear", duration: 1 }}
+                  <circle cx="112" cy="112" r="108" fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="3" />
+                  <motion.circle
+                    cx="112" cy="112" r="108"
+                    fill="none"
+                    stroke="rgba(255,255,255,0.75)"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeDasharray={circumference}
+                    animate={{ strokeDashoffset: circumference * (1 - progress) }}
+                    transition={{ ease: 'linear', duration: 1 }}
                   />
                 </svg>
-                <div className="text-[48px] font-black text-gray-900 tracking-tight leading-none z-10">{formatTime(secondsLeft)}</div>
-                <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mt-2 z-10">Remaining</div>
-              </div>
+
+                {/* Timer */}
+                <div className="text-[52px] font-black text-white tracking-tight leading-none z-10">
+                  {formatTime(secondsLeft)}
+                </div>
+
+                {/* Breathe label */}
+                <motion.div
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
+                  className="text-[11px] text-white/70 uppercase tracking-[0.3em] font-black mt-2 z-10"
+                >
+                  {Math.floor(elapsedRef.current / 4) % 2 === 0 ? 'Inhale' : 'Exhale'}
+                </motion.div>
+              </motion.div>
             </div>
 
             {/* Guided instruction */}
-            <motion.div 
+            <motion.div
               key={currentInstruction}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="px-6 py-4 bg-white border border-gray-100 rounded-3xl shadow-sm mb-12 max-w-[280px]"
+              className="px-6 py-5 rounded-3xl mb-12 max-w-[300px]"
+              style={{
+                background: 'rgba(255,255,255,0.08)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255,255,255,0.15)'
+              }}
             >
-              <p className="text-[16px] font-medium italic text-gray-800 leading-relaxed text-center">
+              <p className="text-[16px] font-medium italic text-white/90 leading-relaxed text-center">
                 "{currentInstruction}"
               </p>
             </motion.div>
 
-            {/* Sound wave indicator */}
+            {/* Sound wave bars */}
             {isAudioPlaying && (
-              <div className="flex space-x-1.5 items-end h-6 mb-8 opacity-60">
-                <motion.div animate={{ height: [6,16,6] }} transition={{ repeat: Infinity, duration: 1.2 }} className="w-1.5 bg-[#4B5563] rounded-full" />
-                <motion.div animate={{ height: [12,6,12] }} transition={{ repeat: Infinity, duration: 0.9 }} className="w-1.5 bg-[#4B5563] rounded-full" />
-                <motion.div animate={{ height: [8,14,8] }} transition={{ repeat: Infinity, duration: 1.4 }} className="w-1.5 bg-[#4B5563] rounded-full" />
-                <motion.div animate={{ height: [14,8,14] }} transition={{ repeat: Infinity, duration: 1.1 }} className="w-1.5 bg-[#4B5563] rounded-full" />
-                <motion.div animate={{ height: [10,14,10] }} transition={{ repeat: Infinity, duration: 1.3 }} className="w-1.5 bg-[#4B5563] rounded-full" />
+              <div className="flex space-x-1.5 items-end h-6 mb-8">
+                {[1.2, 0.9, 1.4, 1.1, 1.3].map((dur, i) => (
+                  <motion.div
+                    key={i}
+                    animate={{ height: [6, 16, 6] }}
+                    transition={{ repeat: Infinity, duration: dur, delay: i * 0.1 }}
+                    className="w-1.5 rounded-full"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.4)' }}
+                  />
+                ))}
               </div>
             )}
 
-            <button 
-              onClick={stopSession} 
-              className="px-10 py-4 rounded-[20px] bg-white border border-red-100 text-red-500 font-bold text-[13px] hover:bg-red-50 transition-all shadow-sm active:scale-95"
+            {/* End Session button */}
+            <button
+              onClick={stopSession}
+              className="px-10 py-4 rounded-full font-bold text-[14px] tracking-wide transition-all active:scale-95"
+              style={{
+                background: 'rgba(255,255,255,0.12)',
+                border: '1.5px solid rgba(255,255,255,0.25)',
+                color: 'rgba(255,255,255,0.9)',
+                backdropFilter: 'blur(12px)'
+              }}
             >
               End Session
             </button>
           </motion.div>
         ) : (
+          /* ─── SELECTION SCREEN (light) ─── */
           <motion.div
             key="selection"
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 10 }}
-            className="px-6 mt-6 relative z-10"
+            className="px-6 mt-6 relative z-10 pb-10"
           >
             <h2 className="text-[32px] font-bold text-gray-900 leading-tight mb-2 tracking-tight">How are you<br/>feeling right now?</h2>
             <p className="text-gray-500 text-[15px] mb-8 font-medium">Select a state to align the soundscape.</p>
@@ -251,7 +356,7 @@ export function Meditate() {
                     `}
                   >
                     <div 
-                      className={`w-12 h-12 rounded-[18px] flex items-center justify-center my-1 transition-transform group-hover:scale-110`}
+                      className="w-12 h-12 rounded-[18px] flex items-center justify-center my-1"
                       style={{ backgroundColor: isSelected ? emo.color : '#F3F4F6', color: isSelected ? emo.textColor : '#6B7280' }}
                     >
                        {emo.icon}
@@ -337,3 +442,5 @@ export function Meditate() {
     </div>
   );
 }
+
+

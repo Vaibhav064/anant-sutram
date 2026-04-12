@@ -13,8 +13,8 @@ export const ASSESSMENTS = {
     shortName: 'BDI',
     image: depressionImg,
     description: 'The BDI is one of the most effective ways to identify the presence and stage of depression. We recommend that you take this test regularly and be guided through the treatment process.',
-    introMessage: 'This is the Beck Depression Inventory (BDI). It takes about 3-5 minutes. Answer honestly — there are no right or wrong answers. Your results are private and only visible to you.',
-    maxScore: 63,
+    introMessage: 'This is the Beck Depression Inventory (BDI). It takes about 5-8 minutes. Answer honestly — there are no right or wrong answers. Your results are private and only visible to you.',
+    maxScore: 30,
     questions: [
       {
         text: 'How have you been feeling sad or down recently?',
@@ -39,7 +39,7 @@ export const ASSESSMENTS = {
         options: [
           { text: 'I do not feel like a failure.', score: 0 },
           { text: 'I feel I have failed more than the average person.', score: 1 },
-          { text: 'As I look back on my life, all I can see is a lot of failures.', score: 2 },
+          { text: 'As I look back, all I can see is failures.', score: 2 },
           { text: 'I feel I am a complete failure as a person.', score: 3 }
         ]
       },
@@ -60,14 +60,57 @@ export const ASSESSMENTS = {
           { text: 'I am disgusted with myself.', score: 2 },
           { text: 'I hate myself.', score: 3 }
         ]
+      },
+      {
+        text: 'Do you have thoughts of harming or punishing yourself?',
+        options: [
+          { text: 'I don\'t have any thoughts of harming myself.', score: 0 },
+          { text: 'I think about harming myself but would not carry them out.', score: 1 },
+          { text: 'I feel I would be better off dead.', score: 2 },
+          { text: 'I would kill myself if I had the chance.', score: 3 }
+        ]
+      },
+      {
+        text: 'How often do you feel like crying?',
+        options: [
+          { text: 'I don\'t cry any more than I used to.', score: 0 },
+          { text: 'I cry more now than I used to.', score: 1 },
+          { text: 'I cry all the time now.', score: 2 },
+          { text: 'I used to be able to cry, but now I can\'t even though I want to.', score: 3 }
+        ]
+      },
+      {
+        text: 'How irritable or annoyed do you feel?',
+        options: [
+          { text: 'I am no more irritated than I ever am.', score: 0 },
+          { text: 'I am slightly more irritated than usual.', score: 1 },
+          { text: 'I feel irritated a lot of the time.', score: 2 },
+          { text: 'I feel irritated all the time now.', score: 3 }
+        ]
+      },
+      {
+        text: 'Have you lost interest in other people?',
+        options: [
+          { text: 'I have not lost interest in other people.', score: 0 },
+          { text: 'I am less interested in other people than I used to be.', score: 1 },
+          { text: 'I have lost most of my interest in other people.', score: 2 },
+          { text: 'I have lost all of my interest in other people.', score: 3 }
+        ]
+      },
+      {
+        text: 'How tired or fatigued do you feel?',
+        options: [
+          { text: 'I am no more tired than usual.', score: 0 },
+          { text: 'I get tired more easily than I used to.', score: 1 },
+          { text: 'I get tired from doing almost anything.', score: 2 },
+          { text: 'I am too tired to do anything.', score: 3 }
+        ]
       }
     ],
     getSeverity: (score) => {
-      // Scale 5 questions to 21 questions range (multiplier 4.2)
-      let adjustedScore = score * 4.2;
-      if (adjustedScore <= 13) return { label: 'Normal state', level: 'normal', color: '#34D399' };
-      if (adjustedScore <= 19) return { label: 'Mild depression', level: 'mild', color: '#FBBF24' };
-      if (adjustedScore <= 28) return { label: 'Exacerbated depressive state', level: 'moderate', color: '#FB923C' };
+      if (score <= 9) return { label: 'Normal state', level: 'normal', color: '#34D399' };
+      if (score <= 16) return { label: 'Mild depression', level: 'mild', color: '#FBBF24' };
+      if (score <= 23) return { label: 'Moderate depression', level: 'moderate', color: '#FB923C' };
       return { label: 'Severe depression', level: 'severe', color: '#F87171' };
     }
   },
@@ -76,9 +119,9 @@ export const ASSESSMENTS = {
     title: 'Anxiety',
     shortName: 'GAD-7',
     image: anxietyImg,
-    description: 'The Generalized Anxiety Disorder 7-item scale (GAD-7) is a validated test to measure the severity of your anxiety levels.',
-    introMessage: 'This is the GAD-7 anxiety assessment. It takes about 2 minutes. Answer honestly — there are no right or wrong answers. Your results are private and only visible to you.',
-    maxScore: 21,
+    description: 'The Generalized Anxiety Disorder assessment measures the severity of your anxiety by evaluating how frequently you experience key anxiety symptoms over the past two weeks.',
+    introMessage: 'This is the GAD-7 anxiety assessment. It takes about 3-5 minutes. Answer honestly — there are no right or wrong answers. Your results are private and only visible to you.',
+    maxScore: 30,
     questions: [
       'Feeling nervous, anxious, or on edge',
       'Not being able to stop or control worrying',
@@ -86,7 +129,10 @@ export const ASSESSMENTS = {
       'Trouble relaxing',
       'Being so restless that it is hard to sit still',
       'Becoming easily annoyed or irritable',
-      'Feeling afraid, as if something awful might happen'
+      'Feeling afraid, as if something awful might happen',
+      'Having difficulty concentrating',
+      'Avoiding situations that trigger anxiety',
+      'Feeling like your worries are out of control'
     ].map(q => ({
       text: `Over the last 2 weeks, how often have you been bothered by: ${q}?`,
       options: [
@@ -97,9 +143,9 @@ export const ASSESSMENTS = {
       ]
     })),
     getSeverity: (score) => {
-      if (score <= 4) return { label: 'Minimal anxiety', level: 'normal', color: '#34D399' };
-      if (score <= 9) return { label: 'Mild anxiety', level: 'mild', color: '#FBBF24' };
-      if (score <= 14) return { label: 'Moderate anxiety', level: 'moderate', color: '#FB923C' };
+      if (score <= 7) return { label: 'Minimal anxiety', level: 'normal', color: '#34D399' };
+      if (score <= 14) return { label: 'Mild anxiety', level: 'mild', color: '#FBBF24' };
+      if (score <= 21) return { label: 'Moderate anxiety', level: 'moderate', color: '#FB923C' };
       return { label: 'Severe anxiety', level: 'severe', color: '#F87171' };
     }
   },
@@ -108,15 +154,20 @@ export const ASSESSMENTS = {
     title: 'Stress',
     shortName: 'PSS',
     image: stressImg,
-    description: 'The Perceived Stress Scale (PSS) helps understand how different situations affect your feelings and your perceived stress.',
+    description: 'The Perceived Stress Scale (PSS) helps understand how different situations affect your feelings and your perceived stress across the past month.',
     introMessage: 'This is the Perceived Stress assessment. It takes about 3-5 minutes. Answer honestly — there are no right or wrong answers. Your results are private.',
-    maxScore: 30, 
+    maxScore: 30,
     questions: [
       'been upset because of something that happened unexpectedly',
       'felt that you were unable to control the important things in your life',
       'felt nervous and "stressed"',
       'found that you could not cope with all the things that you had to do',
-      'been angered because of things that were outside of your control'
+      'been angered because of things that were outside of your control',
+      'felt difficulties were piling up so high that you could not overcome them',
+      'felt that things were going your way',
+      'been able to control irritations in your life',
+      'felt on top of things',
+      'been able to control the way you spend your time'
     ].map(q => ({
       text: `In the last month, how often have you ${q}?`,
       options: [
@@ -127,10 +178,9 @@ export const ASSESSMENTS = {
       ]
     })),
     getSeverity: (score) => {
-      let adjustedScore = score * 2; 
-      if (adjustedScore <= 13) return { label: 'Low stress', level: 'normal', color: '#34D399' };
-      if (adjustedScore <= 20) return { label: 'Moderate stress', level: 'mild', color: '#FBBF24' };
-      if (adjustedScore <= 26) return { label: 'High stress', level: 'moderate', color: '#FB923C' };
+      if (score <= 9) return { label: 'Low stress', level: 'normal', color: '#34D399' };
+      if (score <= 16) return { label: 'Moderate stress', level: 'mild', color: '#FBBF24' };
+      if (score <= 23) return { label: 'High stress', level: 'moderate', color: '#FB923C' };
       return { label: 'Very high stress', level: 'severe', color: '#F87171' };
     }
   },
@@ -139,15 +189,20 @@ export const ASSESSMENTS = {
     title: 'Self-Esteem',
     shortName: 'RSES',
     image: selfesteemImg,
-    description: 'The Rosenberg Self-Esteem Scale (RSES) measures state self-esteem by asking about your current feelings.',
-    introMessage: 'This is the Self-Esteem assessment. It takes about 2 minutes. Answer honestly — there are no right or wrong answers.',
-    maxScore: 15,
+    description: 'The Rosenberg Self-Esteem Scale (RSES) measures state self-esteem by asking about your current feelings about yourself and your sense of worth.',
+    introMessage: 'This is the Self-Esteem assessment. It takes about 3-5 minutes. Answer honestly — there are no right or wrong answers.',
+    maxScore: 30,
     questions: [
       'I feel that I am a person of worth, at least on an equal plane with others.',
       'I feel that I have a number of good qualities.',
       'I am able to do things as well as most other people.',
       'I take a positive attitude toward myself.',
-      'On the whole, I am satisfied with myself.'
+      'On the whole, I am satisfied with myself.',
+      'I feel I do not have much to be proud of.',
+      'I certainly feel useless at times.',
+      'I wish I could have more respect for myself.',
+      'All in all, I am inclined to feel that I am a failure.',
+      'At times I think I am no good at all.'
     ].map(q => ({
       text: q,
       options: [
@@ -158,9 +213,9 @@ export const ASSESSMENTS = {
       ]
     })),
     getSeverity: (score) => {
-      if (score <= 3) return { label: 'Normal self-esteem', level: 'normal', color: '#34D399' };
-      if (score <= 7) return { label: 'Slightly low self-esteem', level: 'mild', color: '#FBBF24' };
-      if (score <= 11) return { label: 'Low self-esteem', level: 'moderate', color: '#FB923C' };
+      if (score <= 7) return { label: 'Normal self-esteem', level: 'normal', color: '#34D399' };
+      if (score <= 14) return { label: 'Slightly low self-esteem', level: 'mild', color: '#FBBF24' };
+      if (score <= 22) return { label: 'Low self-esteem', level: 'moderate', color: '#FB923C' };
       return { label: 'Very low self-esteem', level: 'severe', color: '#F87171' };
     }
   },
@@ -169,15 +224,20 @@ export const ASSESSMENTS = {
     title: 'Work Burnout',
     shortName: 'MBI',
     image: burnoutImg,
-    description: 'The Maslach Burnout Inventory simplified scale helps evaluate feelings of occupational burnout and emotional exhaustion.',
+    description: 'The Maslach Burnout Inventory evaluates feelings of occupational burnout, emotional exhaustion, and depersonalization in the workplace.',
     introMessage: 'This is the Work Burnout assessment. Focus on how you have been feeling at work recently.',
-    maxScore: 15,
+    maxScore: 30,
     questions: [
       'I feel emotionally drained from my work.',
       'I feel used up at the end of the workday.',
       'I feel fatigued when I get up in the morning and have to face another day on the job.',
       'Working with people all day is really a strain for me.',
-      'I feel burned out from my work.'
+      'I feel burned out from my work.',
+      'I feel frustrated by my job.',
+      'I feel I am working too hard on my job.',
+      'Working with people directly puts too much stress on me.',
+      'I feel like I\'m at the end of my rope.',
+      'I have become less interested in my work since I started this job.'
     ].map(q => ({
       text: q,
       options: [
@@ -188,9 +248,9 @@ export const ASSESSMENTS = {
       ]
     })),
     getSeverity: (score) => {
-      if (score <= 4) return { label: 'Low burnout', level: 'normal', color: '#34D399' };
-      if (score <= 8) return { label: 'Moderate burnout', level: 'mild', color: '#FBBF24' };
-      if (score <= 11) return { label: 'High burnout', level: 'moderate', color: '#FB923C' };
+      if (score <= 9) return { label: 'Low burnout', level: 'normal', color: '#34D399' };
+      if (score <= 16) return { label: 'Moderate burnout', level: 'mild', color: '#FBBF24' };
+      if (score <= 22) return { label: 'High burnout', level: 'moderate', color: '#FB923C' };
       return { label: 'Severe burnout', level: 'severe', color: '#F87171' };
     }
   },
@@ -199,15 +259,20 @@ export const ASSESSMENTS = {
     title: 'Social Anxiety',
     shortName: 'SPIN',
     image: socialImg,
-    description: 'The Social Phobia Inventory (SPIN) screens for social anxiety disorder symptoms including fear, avoidance, and physiological distress.',
+    description: 'The Social Phobia Inventory (SPIN) screens for social anxiety disorder symptoms including fear of social situations, avoidance behaviors, and physiological distress.',
     introMessage: 'This is the Social Anxiety assessment. Consider your social interactions in the past week.',
-    maxScore: 15,
+    maxScore: 30,
     questions: [
       'I am afraid of people in authority.',
       'I avoid talking to people I don\'t know.',
       'I am bothered by blushing in front of people.',
       'Parties and social events scare me.',
-      'Being criticized scares me a lot.'
+      'Being criticized scares me a lot.',
+      'I avoid doing things or speaking to people for fear of embarrassment.',
+      'Sweating in front of people causes me distress.',
+      'I avoid going to parties.',
+      'I avoid activities in which I am the center of attention.',
+      'Talking to strangers scares me.'
     ].map(q => ({
       text: q,
       options: [
@@ -218,9 +283,9 @@ export const ASSESSMENTS = {
       ]
     })),
     getSeverity: (score) => {
-      if (score <= 4) return { label: 'Normal social anxiety', level: 'normal', color: '#34D399' };
-      if (score <= 8) return { label: 'Mild social anxiety', level: 'mild', color: '#FBBF24' };
-      if (score <= 11) return { label: 'Moderate social anxiety', level: 'moderate', color: '#FB923C' };
+      if (score <= 7) return { label: 'Normal social anxiety', level: 'normal', color: '#34D399' };
+      if (score <= 14) return { label: 'Mild social anxiety', level: 'mild', color: '#FBBF24' };
+      if (score <= 22) return { label: 'Moderate social anxiety', level: 'moderate', color: '#FB923C' };
       return { label: 'Severe social anxiety', level: 'severe', color: '#F87171' };
     }
   },
@@ -229,15 +294,20 @@ export const ASSESSMENTS = {
     title: 'Loneliness',
     shortName: 'UCLA',
     image: lonelinessImg,
-    description: 'The UCLA Loneliness Scale is a widely used measure of general feelings of social isolation and loneliness.',
+    description: 'The UCLA Loneliness Scale is a widely used measure of general feelings of social isolation and loneliness in your daily life.',
     introMessage: 'This is the Loneliness assessment. Consider your feelings of connection over the last few weeks.',
-    maxScore: 15,
+    maxScore: 30,
     questions: [
       'How often do you feel that you lack companionship?',
       'How often do you feel left out?',
       'How often do you feel isolated from others?',
       'How often do you feel that no one really knows you well?',
-      'How often do you feel that people are around you but not with you?'
+      'How often do you feel that people are around you but not with you?',
+      'How often do you feel that there is no one you can turn to?',
+      'How often do you feel alone?',
+      'How often do you feel unable to reach out and communicate with those around you?',
+      'How often do you feel starved for company?',
+      'How often do you feel that your interests and ideas are not shared by those around you?'
     ].map(q => ({
       text: q,
       options: [
@@ -248,9 +318,9 @@ export const ASSESSMENTS = {
       ]
     })),
     getSeverity: (score) => {
-      if (score <= 4) return { label: 'Low loneliness', level: 'normal', color: '#34D399' };
-      if (score <= 8) return { label: 'Moderate loneliness', level: 'mild', color: '#FBBF24' };
-      if (score <= 11) return { label: 'High loneliness', level: 'moderate', color: '#FB923C' };
+      if (score <= 7) return { label: 'Low loneliness', level: 'normal', color: '#34D399' };
+      if (score <= 14) return { label: 'Moderate loneliness', level: 'mild', color: '#FBBF24' };
+      if (score <= 22) return { label: 'High loneliness', level: 'moderate', color: '#FB923C' };
       return { label: 'Severe loneliness', level: 'severe', color: '#F87171' };
     }
   },
@@ -258,16 +328,21 @@ export const ASSESSMENTS = {
     id: 'wemwbs',
     title: 'Emotional Wellbeing',
     shortName: 'WEMWBS',
-    image: anxietyImg, // placeholder
-    description: 'The Warwick-Edinburgh Mental Well-being Scale measures positive mental health and overall emotional wellbeing.',
-    introMessage: 'This is the Emotional Wellbeing assessment. Focus on positive feelings and how you function.',
-    maxScore: 15,
+    image: anxietyImg,
+    description: 'The Warwick-Edinburgh Mental Well-being Scale measures positive mental health including positive feelings, positive functioning, and overall emotional wellbeing.',
+    introMessage: 'This is the Emotional Wellbeing assessment. Focus on positive feelings and how you function day-to-day.',
+    maxScore: 30,
     questions: [
       'I\'ve been feeling optimistic about the future',
       'I\'ve been feeling useful',
       'I\'ve been feeling relaxed',
       'I\'ve been dealing with problems well',
-      'I\'ve been thinking clearly'
+      'I\'ve been thinking clearly',
+      'I\'ve been feeling good about myself',
+      'I\'ve been feeling close to other people',
+      'I\'ve been able to make up my own mind about things',
+      'I\'ve been feeling interested in new things',
+      'I\'ve been feeling cheerful'
     ].map(q => ({
       text: `In the last 2 weeks: ${q}`,
       options: [
@@ -278,9 +353,9 @@ export const ASSESSMENTS = {
       ]
     })),
     getSeverity: (score) => {
-      if (score <= 4) return { label: 'High wellbeing', level: 'normal', color: '#34D399' };
-      if (score <= 8) return { label: 'Average wellbeing', level: 'mild', color: '#FBBF24' };
-      if (score <= 11) return { label: 'Low wellbeing', level: 'moderate', color: '#FB923C' };
+      if (score <= 7) return { label: 'High wellbeing', level: 'normal', color: '#34D399' };
+      if (score <= 14) return { label: 'Average wellbeing', level: 'mild', color: '#FBBF24' };
+      if (score <= 22) return { label: 'Low wellbeing', level: 'moderate', color: '#FB923C' };
       return { label: 'Very low wellbeing', level: 'severe', color: '#F87171' };
     }
   }

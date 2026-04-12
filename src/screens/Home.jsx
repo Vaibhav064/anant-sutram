@@ -253,11 +253,11 @@ function getMoodState(score) {
 
 function getTimeGreeting() {
   const h = new Date().getHours();
-  if (h < 5)  return 'Good Night';
-  if (h < 12) return 'Good Morning';
-  if (h < 17) return 'Good Afternoon';
-  if (h < 21) return 'Good Evening';
-  return       'Good Night';
+  if (h < 5)  return 'Good Night 🌙';
+  if (h < 12) return 'Good Morning 🌅';
+  if (h < 17) return 'Good Afternoon ☀️';
+  if (h < 21) return 'Good Evening 🌇';
+  return       'Good Night 🌙';
 }
 
 function isToday(dateStr) {
@@ -536,6 +536,33 @@ export function Home() {
           </AnimatePresence>
         </div>
       </motion.div>
+
+      {/* ── Urgent Low Mood CTA ─────────────────────────────────── */}
+      {hasCheckedIn && moodScore !== null && moodScore <= 4 && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12, type: 'spring', stiffness: 280, damping: 22 }}
+          className="mx-5 mt-3"
+        >
+          <button
+            onClick={() => navigate('/chat', { state: { preMessage: `I noticed my mood is quite low today (${moodScore}/10). I could use some support.` } })}
+            className="w-full flex items-center gap-4 p-4 rounded-[22px] text-left transition-all active:scale-[0.98]"
+            style={{
+              background: 'linear-gradient(135deg, rgba(239,68,68,0.10) 0%, rgba(217,70,239,0.10) 100%)',
+              border: '1.5px solid rgba(239,68,68,0.25)',
+              boxShadow: '0 4px 20px rgba(239,68,68,0.10)'
+            }}
+          >
+            <div className="w-12 h-12 rounded-full flex items-center justify-center text-[24px] shrink-0" style={{ background: 'rgba(239,68,68,0.12)' }}>😔</div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] mb-0.5" style={{ color: 'rgba(185,28,28,0.75)' }}>Your mood seems low</p>
+              <p className="text-[15px] font-bold leading-tight" style={{ color: '#7F1D1D' }}>Talk to Anant AI now →</p>
+              <p className="text-[12px] font-medium mt-0.5" style={{ color: 'rgba(127,29,29,0.65)' }}>I'm here to listen. Tell me what's going on.</p>
+            </div>
+          </button>
+        </motion.div>
+      )}
 
       {/* ── Feature Tiles — 3-col glassmorphism ─────────────────── */}
       <div className="px-5 mt-5">
