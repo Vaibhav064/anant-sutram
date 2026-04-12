@@ -97,6 +97,7 @@ export function Meditate() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, []);
 
+  const startSession = (emotionId, durationMin) => {
     const totalSecs = durationMin * 60;
     setTotalSeconds(totalSecs);
     setSecondsLeft(totalSecs);
