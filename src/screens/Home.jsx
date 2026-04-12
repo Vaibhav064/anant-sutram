@@ -34,7 +34,7 @@ function JournalIcon() {
   );
 }
 
-function LuminaIcon() {
+function AnantIcon() {
   return (
     <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
       {/* Outer glow ring */}
@@ -180,12 +180,12 @@ const FEATURE_CARDS = [
   },
   {
     id: 'chat',
-    title: 'Lumina\nAI',
+    title: 'Anant\nAI',
     path: '/chat',
     tileColor: 'rgba(178,245,212,0.72)',
     iconBg: 'rgba(141,236,194,0.55)',
     iconBorder: 'rgba(52,211,153,0.35)',
-    Icon: LuminaIcon,
+    Icon: AnantIcon,
   },
   {
     id: 'meditate',

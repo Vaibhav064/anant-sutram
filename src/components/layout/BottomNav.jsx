@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 
 const tabs = [
   { id: 'home',    path: '/home',          icon: Home,      label: 'Home' },
-  { id: 'lumina',  path: '/chat',          icon: Sparkles,  label: 'Lumina' },
+  { id: 'lumina',  path: '/chat',          icon: Sparkles,  label: 'Anant' },
   { id: 'reset',   path: '/anxiety-reset', icon: RefreshCw, label: 'Reset' },
   { id: 'journal', path: '/journal',       icon: PenLine,   label: 'Journal' },
   { id: 'healers', path: '/healers',       icon: Users,     label: 'Healers' },

@@ -62,7 +62,7 @@ export function Subscribe() {
 
         {/* SHAKTI TIER */}
         <div className="bg-surface bg-gradient-to-b from-primary/10 to-transparent border border-primary/30 rounded-3xl p-7 relative overflow-hidden shadow-glow-primary">
-          <div className="absolute top-0 right-0 bg-primary/90 backdrop-blur-md text-white text-[10px] font-bold px-4 py-1.5 rounded-bl-xl tracking-widest shadow-md">
+          <div className="absolute top-4 right-4 bg-primary text-white text-[9px] font-black px-3 py-1.5 rounded-full tracking-widest shadow-lg border border-white/20 z-10">
             MOST POPULAR
           </div>
           <div className="flex justify-between items-center mb-6 mt-2">

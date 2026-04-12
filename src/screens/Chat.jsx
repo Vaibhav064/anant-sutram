@@ -19,7 +19,7 @@ class ChatErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    console.error('[Lumina] Chat render error:', error, info);
+    console.error('[Anant] Chat render error:', error, info);
   }
 
   render() {
@@ -27,7 +27,7 @@ class ChatErrorBoundary extends Component {
       return (
         <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#F5F3FA] px-8 text-center">
           <span className="text-[56px] mb-5">🌿</span>
-          <h2 className="text-[22px] font-bold text-slate-900 tracking-tight mb-2">Lumina needs a moment</h2>
+          <h2 className="text-[22px] font-bold text-slate-900 tracking-tight mb-2">Anant needs a moment</h2>
           <p className="text-[14px] text-slate-500 font-medium leading-relaxed mb-8">
             Something went wrong loading the chat. This is usually temporary.
           </p>
@@ -287,7 +287,7 @@ function ChatInner() {
 
       setMessages(prev => [...prev, { role: 'assistant', content: reply, timestamp: new Date().toISOString() }]);
     } catch (error) {
-      console.warn('[Lumina] AI error:', error);
+      console.warn('[Anant] AI error:', error);
       setTimeout(() => {
         setMessages(prev => [...prev, {
           role: 'assistant',
@@ -436,7 +436,7 @@ function ChatInner() {
                 🌿
               </div>
               <div>
-                <h1 className="text-[28px] font-black text-slate-900 leading-tight tracking-tight">Lumina</h1>
+                <h1 className="text-[28px] font-black text-slate-900 leading-tight tracking-tight">Anant</h1>
                 <p className="text-slate-400 text-[13px] font-semibold">Your AI wellness companion</p>
               </div>
             </div>

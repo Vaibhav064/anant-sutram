@@ -84,6 +84,7 @@ export function Meditate() {
   const [selectedEmotion, setSelectedEmotion] = useState(null);
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
+  const [totalSeconds, setTotalSeconds] = useState(60);
   const [currentInstruction, setCurrentInstruction] = useState('');
   const timerRef = useRef(null);
   const elapsedRef = useRef(0);
@@ -96,9 +97,9 @@ export function Meditate() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, []);
 
-  const startSession = (emotionId, durationMin) => {
-    const totalSeconds = durationMin * 60;
-    setSecondsLeft(totalSeconds);
+    const totalSecs = durationMin * 60;
+    setTotalSeconds(totalSecs);
+    setSecondsLeft(totalSecs);
     setIsSessionActive(true);
     elapsedRef.current = 0;
 
@@ -185,7 +186,7 @@ export function Meditate() {
                     fill="none" stroke="#C2E8D8" strokeWidth="6" strokeLinecap="round"
                     strokeDasharray={2 * Math.PI * 108}
                     initial={false}
-                    animate={{ strokeDashoffset: (2 * Math.PI * 108) * (1 - (secondsLeft / (secondsLeft || 60))) }}
+                    animate={{ strokeDashoffset: (2 * Math.PI * 108) * (1 - (secondsLeft / totalSeconds)) }}
                     transition={{ ease: "linear", duration: 1 }}
                   />
                 </svg>
