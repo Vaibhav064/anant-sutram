@@ -233,6 +233,9 @@ function ChatInner() {
   const [sidebarOpen,     setSidebarOpen]     = useState(false);
   const [isInitializing,  setIsInitializing]  = useState(true);
 
+  // Pending persona — session is only created in the store after first real user message
+  const pendingPersonaRef = useRef(null);
+
   // ── Refs ──────────────────────────────────────────────────────
   const messagesEndRef    = useRef(null);
   const chatContainerRef  = useRef(null);   // ← FIX: was missing, causing crash
@@ -272,32 +275,25 @@ function ChatInner() {
   }, [messages, isTyping]);
 
   useEffect(() => {
-    if (sessionId && messages.length > 0) {
+    // Only update the store once there's actually a real exchange (user msg present)
+    const hasUserMessage = messages.some(m => m.role === 'user');
+    if (sessionId && hasUserMessage) {
       updateChatSession(sessionId, messages);
     }
   }, [messages, sessionId, updateChatSession]);
 
-  useEffect(() => {
-    if (persona && messages.length === 0 && sessionId) {
-      const config = PERSONA_CONFIGS[persona];
-      if (config) {
-        setMessages([{ role: 'assistant', content: config.greeting, timestamp: new Date().toISOString() }]);
-      }
-    }
-  }, [persona, sessionId, messages.length]);
+
 
   const startNewSession = (personaId) => {
     const config = PERSONA_CONFIGS[personaId];
-    const id = createChatSession(personaId, config.name, config.icon);
+    // Don't create a store session yet — defer until first user message
+    pendingPersonaRef.current = personaId;
     setPersona(personaId);
-    setSessionId(id);
-    setMessages([]);
+    setSessionId(null);   // no store session yet
+    setMessages([{ role: 'assistant', content: config.greeting, timestamp: new Date().toISOString() }]);
     setSidebarOpen(false);
-    // If we arrived with a preMessage (e.g. from low-mood CTA), auto-send after greeting
     if (preMessage) {
-      setTimeout(() => {
-        handleSend(preMessage);
-      }, 1800); // slight delay so greeting renders first
+      setTimeout(() => { handleSend(preMessage); }, 1800);
     }
   };
 
@@ -324,6 +320,15 @@ function ChatInner() {
 
   const handleSend = async (text = input) => {
     if (!text.trim()) return;
+
+    // ── Lazy session creation: first real user message triggers store save ──
+    let activeSessionId = sessionId;
+    if (!activeSessionId && pendingPersonaRef.current) {
+      const config = PERSONA_CONFIGS[pendingPersonaRef.current];
+      activeSessionId = createChatSession(pendingPersonaRef.current, config.name, config.icon);
+      setSessionId(activeSessionId);
+      pendingPersonaRef.current = null;
+    }
 
     const newMsg = { role: 'user', content: text, timestamp: new Date().toISOString() };
     const updatedMessages = [...messages, newMsg];

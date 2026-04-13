@@ -50,10 +50,10 @@ export function BottomNav() {
                 {/* Active bar indicator at top */}
                 {isActive && (
                   <motion.div
-                    className="absolute top-[-2px] h-[3px] rounded-full"
-                    style={{ background: 'var(--color-primary)', width: '20px', left: '50%' }}
-                    initial={{ scaleX: 0, opacity: 0, x: "-50%" }}
-                    animate={{ scaleX: 1, opacity: 1, x: "-50%" }}
+                    className="absolute top-[-2px] left-0 right-0 mx-auto h-[3px] rounded-full"
+                    style={{ background: 'var(--color-primary)', width: '20px' }}
+                    initial={{ scaleX: 0, opacity: 0 }}
+                    animate={{ scaleX: 1, opacity: 1 }}
                     transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                   />
                 )}

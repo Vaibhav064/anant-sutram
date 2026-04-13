@@ -33,15 +33,16 @@ export function Splash() {
   if (user && token) return null;
 
   return (
-    <div className="relative min-h-[100dvh] bg-bg flex flex-col items-center justify-center overflow-hidden px-8">
+    <div className="relative min-h-[100dvh] bg-bg flex flex-col items-center justify-center overflow-x-hidden px-8 py-12">
       {/* Dynamic Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none flex items-center justify-center">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 flex items-center justify-center">
         {/* Blurry atmospheric backdrop image */}
         <div className="absolute inset-0 opacity-40 mix-blend-multiply flex items-center justify-center">
             <img 
                src="/lotus.png" 
                alt="" 
                className="w-[120%] h-[120%] object-cover blur-[100px] saturate-[1.5] animate-pulse-slow" 
+               style={{ willChange: 'transform, filter' }}
             />
         </div>
         
@@ -53,6 +54,7 @@ export function Splash() {
           }}
           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
           className="absolute -top-[20%] -right-[20%] w-[80%] h-[80%] rounded-full bg-primary/40 blur-[120px]"
+          style={{ willChange: 'transform, opacity' }}
         />
         <motion.div 
           animate={{ 
@@ -62,6 +64,7 @@ export function Splash() {
           }}
           transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
           className="absolute -bottom-[20%] -left-[20%] w-[80%] h-[80%] rounded-full bg-secondary/40 blur-[120px]"
+          style={{ willChange: 'transform, opacity' }}
         />
       </div>
 

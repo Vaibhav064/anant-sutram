@@ -33,6 +33,9 @@ export const useStore = create(
       audioVolume: 0.5,
       activeTrack: null,
 
+      // Meditation session (persisted so back-navigation returns to active session)
+      meditationSession: null, // { emotionId, selectedEmotion, durationMin, totalSeconds, startedAt }
+
       // 21-day progress (cached from server)
       anxietyResetProgress: null,
 
@@ -76,6 +79,9 @@ export const useStore = create(
       setAudioPlaying: (isAudioPlaying) => set({ isAudioPlaying }),
       setAudioVolume: (audioVolume) => set({ audioVolume }),
       setActiveTrack: (activeTrack) => set({ activeTrack }),
+
+      setMeditationSession: (session) => set({ meditationSession: session }),
+      clearMeditationSession: () => set({ meditationSession: null }),
 
       setAnxietyResetProgress: (anxietyResetProgress) => set({ anxietyResetProgress }),
 
@@ -144,6 +150,7 @@ export const useStore = create(
           isAudioPlaying: false,
           anxietyResetProgress: null,
           activeChatSessionId: null,
+          meditationSession: null,
           // chatSessions intentionally kept — history survives re-login
         });
       },

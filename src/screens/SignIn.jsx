@@ -22,20 +22,26 @@ function GoogleIcon() {
 // ─── Animated background ───────────────────────────────────────────────────────
 function BgOrbs() {
   return (
-    <>
+    <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
       <motion.div
         animate={{ opacity: [0.12, 0.25, 0.12], scale: [1, 1.15, 1] }}
         transition={{ duration: 9, repeat: Infinity }}
-        className="absolute w-[500px] h-[500px] rounded-full pointer-events-none -top-24 -left-24"
-        style={{ background: 'radial-gradient(circle, rgba(124,106,245,0.35) 0%, transparent 70%)' }}
+        className="absolute w-[500px] h-[500px] rounded-full -top-24 -left-24"
+        style={{ 
+          background: 'radial-gradient(circle, rgba(124,106,245,0.35) 0%, transparent 70%)',
+          willChange: 'transform, opacity' 
+        }}
       />
       <motion.div
         animate={{ opacity: [0.08, 0.18, 0.08], scale: [1, 1.2, 1] }}
         transition={{ duration: 12, repeat: Infinity, delay: 3 }}
-        className="absolute w-[400px] h-[400px] rounded-full pointer-events-none -bottom-24 -right-24"
-        style={{ background: 'radial-gradient(circle, rgba(192,132,252,0.25) 0%, transparent 70%)' }}
+        className="absolute w-[400px] h-[400px] rounded-full -bottom-24 -right-24"
+        style={{ 
+          background: 'radial-gradient(circle, rgba(192,132,252,0.25) 0%, transparent 70%)',
+          willChange: 'transform, opacity' 
+        }}
       />
-    </>
+    </div>
   );
 }
 
@@ -362,7 +368,7 @@ export function SignIn() {
 
   if (pendingEmail) {
     return (
-      <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      <div className="min-h-[100dvh] bg-bg flex flex-col items-center justify-center p-6 relative overflow-x-hidden">
         <BgOrbs />
         <AnimatePresence mode="wait">
           <VerifyEmailScreen key="verify" email={pendingEmail} onBack={() => { setPendingEmail(null); setIsLogin(true); }} />
@@ -372,7 +378,7 @@ export function SignIn() {
   }
 
   return (
-    <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-[100dvh] bg-bg flex flex-col items-center justify-center p-6 relative overflow-x-hidden py-12">
       <BgOrbs />
       <GoogleSetupModal />
 
